@@ -5,12 +5,16 @@ Web APP Tools for Fogg behavior collection and Focus Map. Help you find your gol
 Develop under .Next and you can deploy on Vercel as well.
 
 Local:
+使用方法：
+下载工程到本地，linux系统直接运行下面的命令。
+如果你是windows，请调出powershell，输入：
 ```bash
 npm install
 npm run dev
 ```
 
 Browser:
+然后打开浏览器，输入这个地址，回车：
 http://localhost:3000
 
 
@@ -27,7 +31,7 @@ Preview:
 
 It's wrote by html, so you can just open it with your web-browser. 
 Enjoy the behavior improvement by Fogg tools!
-
+福格工具第二期，为了方便大家使用，我做成了纯html，也就是说下载后，直接双击点开即可！
 Preview:
 
 <img width="990" height="956" alt="image" src="https://github.com/user-attachments/assets/6dfce7c4-6ac3-4e4b-a061-ae6d9e5b5e75" />
