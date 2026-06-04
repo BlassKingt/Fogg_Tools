@@ -1,4 +1,7 @@
 # Fogg_Tools
+如果觉得好用，请给博主一个免费的⭐星星
+Please kindly mark a S⭐T⭐A⭐R⭐ if you find it's useful.
+
 Web APP Tools for Fogg behavior collection and Focus Map. Help you find your golden behaviors that lead to your dream.
 
 
