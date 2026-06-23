@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.next-dev.log
+.next-dev.err.log
+*.zip
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env*
