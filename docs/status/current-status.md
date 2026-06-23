@@ -2,7 +2,7 @@
 
 ## 阶段
 
-文档和管理体系已建立，并已改为中文主文档。核心整合已完成：根路由是工具箱首页，黄金行为探索器位于 `/golden-behavior`，能力链设计器已迁移到 `/ability-chain`，黄金行为可以继续进入突破设计。当前正在进行统一视觉、导航和进度管理打磨。
+文档和管理体系已建立，并已改为中文主文档。核心整合已完成：根路由是工具箱首页，黄金行为探索器位于 `/golden-behavior`，能力链设计器已迁移到 `/ability-chain`，黄金行为可以继续进入突破设计。已保存功能 baseline，并完成第一轮统一视觉和导航打磨。
 
 ## 已确认决策
 
@@ -16,6 +16,8 @@
 ## 当前仓库状态
 
 - `pages/index.js` 现在是工具箱首页。
+- `components/SiteNav.js` 是三页共用的顶部导航，包含工具箱、黄金行为、能力链三处入口和当前页高亮。
+- `pages/_app.js` 定义统一的全局色板、背景、字体和 focus state。
 - `pages/golden-behavior.js` 包含当前黄金行为探索器，已加入工具导航和 localStorage 进度缓存；结果页提供“重新寻找黄金行为”入口。
 - `pages/ability-chain.js` 是 React 版本能力链设计器，已替代原临时承接页，并加入工具导航、localStorage 进度缓存、当前方案移除和 HTML 分析报告导出。
 - `fuge_tools_2/fogg_tool_2_AbilityChain_MiniBehavior.html` 包含独立 HTML 版本的能力链设计器。
@@ -25,7 +27,9 @@
 ## 已验证
 
 - `npm run build` 通过。
+- 本地 git baseline 已保存：`5f0a411 baseline before visual polish`。
 - Next.js build 输出包含 `/`、`/golden-behavior`、`/ability-chain`。
+- 三页已接入统一顶部导航，桌面端和 375px 移动端均验证当前页高亮正确、无横向溢出。
 - 本地 `http://127.0.0.1:3001/` 可访问工具箱首页。
 - 本地 `http://127.0.0.1:3001/golden-behavior` 可访问黄金行为探索器。
 - 本地 `http://127.0.0.1:3001/ability-chain` 可访问能力链设计器迁移承接页。
@@ -48,5 +52,5 @@
 
 ## 下一步
 
-1. 继续做三页视觉细节统一：按钮密度、导航位置、移动端焦点图体验。
+1. 继续检查黄金行为焦点图在真实手机尺寸上的拖拽体验。
 2. 做 Vercel 部署前检查。

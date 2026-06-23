@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import SiteNav from '../components/SiteNav';
 
 const ABILITY_STORAGE_KEY = 'fogg-tools-ability-chain-state-v1';
 const GOLDEN_STORAGE_KEY = 'fogg-tools-golden-behavior-state-v1';
@@ -574,12 +575,9 @@ export default function AbilityChainPage() {
   const allNo = allAnswered && ANGLES.every(angle => currentAnswers[angle.id] === 'no');
 
   return (
-    <main className="container">
-      <nav className="top-nav" aria-label="工具导航">
-        <Link href="/">返回工具箱</Link>
-        <Link href="/golden-behavior">黄金行为探索器</Link>
-      </nav>
-
+    <>
+      <SiteNav />
+      <main className="container">
       <header className="header">
         <div className="header-icon">🔗</div>
         <h1>福格能力链 · 突破设计工具</h1>
@@ -856,61 +854,36 @@ export default function AbilityChainPage() {
       )}
 
       <style jsx>{`
-        :global(body) {
-          margin: 0;
-          font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-          background: #f5f3fa;
-          color: #2d2b3a;
-        }
-
-        :global(*) {
-          box-sizing: border-box;
-        }
-
         .container {
-          max-width: 900px;
-          min-height: 100vh;
+          max-width: 960px;
+          min-height: calc(100vh - 96px);
           margin: 0 auto;
-          padding: 24px 20px 48px;
-          --card-bg: #ffffff;
-          --text: #2d2b3a;
-          --text-secondary: #5a4b9e;
-          --text-muted: #9b8ec4;
-          --purple: #6c5ce7;
-          --purple-light: #a29bfe;
-          --purple-bg: #f0ecf8;
-          --gold: #ffb300;
+          padding: 0 20px 48px;
+          --card-bg: rgba(255, 255, 255, 0.86);
+          --text: var(--ft-ink);
+          --text-secondary: var(--ft-plum);
+          --text-muted: var(--ft-muted);
+          --purple: var(--ft-plum);
+          --purple-light: #8c82b5;
+          --purple-bg: var(--ft-plum-soft);
+          --gold: var(--ft-amber);
           --gold-light: #fff3cd;
-          --danger: #e17055;
-          --success: #00b894;
+          --danger: var(--ft-danger);
+          --success: var(--ft-success);
           --radius-sm: 14px;
-          --radius-md: 20px;
-          --radius-lg: 28px;
+          --radius-md: 16px;
+          --radius-lg: 18px;
           --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .top-nav {
-          display: flex;
-          gap: 10px;
-          justify-content: space-between;
-          margin-bottom: 18px;
-        }
-
-        .top-nav :global(a) {
-          color: var(--text-secondary);
-          text-decoration: none;
-          font-size: 0.86rem;
-          font-weight: 700;
-          background: #fff;
-          border: 1px solid #e8e2f5;
-          border-radius: 999px;
-          padding: 9px 14px;
-          box-shadow: 0 4px 14px rgba(70, 55, 130, 0.06);
         }
 
         .header {
           text-align: center;
           margin-bottom: 32px;
+          background: rgba(255, 255, 255, 0.7);
+          border: 1px solid var(--ft-line);
+          border-radius: 8px;
+          padding: 24px 20px;
+          box-shadow: 0 12px 34px rgba(65, 56, 105, 0.08);
         }
 
         .header-icon {
@@ -922,7 +895,8 @@ export default function AbilityChainPage() {
           margin: 0 0 4px;
           font-size: 1.5rem;
           font-weight: 700;
-          color: #5a4b9e;
+          color: var(--ft-plum);
+          text-wrap: balance;
         }
 
         .subtitle {
@@ -970,14 +944,14 @@ export default function AbilityChainPage() {
           background: var(--card-bg);
           border-radius: var(--radius-lg);
           padding: 24px 28px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-          border: 1px solid #ece4f7;
+          box-shadow: 0 10px 30px rgba(65, 56, 105, 0.07);
+          border: 1px solid var(--ft-line);
           margin-bottom: 18px;
           transition: var(--transition);
         }
 
         .card:hover {
-          box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 16px 38px rgba(65, 56, 105, 0.1);
         }
 
         .prompt-title {
@@ -1006,19 +980,19 @@ export default function AbilityChainPage() {
         .input-group input {
           flex: 1;
           min-width: 200px;
-          border: 2px solid #e0d8f0;
+          border: 2px solid var(--ft-line);
           border-radius: 40px;
           padding: 13px 20px;
           font-size: 0.95rem;
           outline: none;
           font-family: inherit;
-          background: #faf9fd;
+          background: #fbf8f3;
           transition: var(--transition);
         }
 
         .input-group input:focus {
           border-color: var(--purple-light);
-          box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.08);
+          box-shadow: 0 0 0 4px rgba(79, 71, 120, 0.08);
           background: #fff;
         }
 
@@ -1026,7 +1000,7 @@ export default function AbilityChainPage() {
           border: none;
           border-radius: 30px;
           padding: 12px 26px;
-          font-weight: 600;
+          font-weight: 700;
           font-size: 0.92rem;
           cursor: pointer;
           transition: var(--transition);
@@ -1047,19 +1021,19 @@ export default function AbilityChainPage() {
         .btn-primary {
           background: var(--purple);
           color: #fff;
-          box-shadow: 0 6px 18px rgba(108, 92, 231, 0.28);
+          box-shadow: 0 8px 20px rgba(65, 56, 105, 0.24);
         }
 
         .btn-outline {
           background: #fff;
           color: var(--purple);
-          border: 2px solid #d0c8f0;
+          border: 2px solid var(--ft-line);
         }
 
         .btn-gold {
-          background: linear-gradient(135deg, #ffd54f, #ffb300);
+          background: #f2c14d;
           color: #4a3500;
-          box-shadow: 0 6px 18px rgba(255, 179, 0, 0.35);
+          box-shadow: 0 8px 20px rgba(217, 155, 30, 0.24);
         }
 
         .btn-sm {
@@ -1642,6 +1616,7 @@ export default function AbilityChainPage() {
           }
         }
       `}</style>
-    </main>
+      </main>
+    </>
   );
 }

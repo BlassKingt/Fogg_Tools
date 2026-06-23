@@ -54,6 +54,12 @@
    - 检查桌面端和移动端布局。
    - 更新 `docs/status/current-status.md` 和 `docs/handoffs/latest-handoff.md`。
 
+9. 统一视觉和导航。已完成第一版。
+   - 保存功能 baseline：`5f0a411 baseline before visual polish`。
+   - 添加 `components/SiteNav.js` 作为三页共用导航。
+   - 在 `pages/_app.js` 中统一背景、色板、字体和 focus state。
+   - 首页、黄金行为探索器、能力链设计器使用同一套导航和更一致的卡片/按钮风格。
+
 ## 验证命令
 
 ```powershell
@@ -80,5 +86,8 @@ npm run dev
 - `npm run build` 已通过方案移除和 HTML 报告导出版本。
 - 浏览器已验证能力链出现“生成分析报告”和“移除这个方案”；移除当前方案会让方案 tab 数量减少。
 - Codex in-app browser 不支持下载事件，因此 HTML 报告下载动作未能在该浏览器里完整捕获。
+- `npm run build` 已通过统一导航和视觉打磨版本。
+- 浏览器已验证 `/`、`/golden-behavior`、`/ability-chain` 三页桌面端当前导航高亮正确，且无横向溢出。
+- 浏览器已验证 375px 移动端三页当前导航高亮正确，且无横向溢出。
 - `/ability-chain` 已用 390px 移动端宽度检查，没有横向溢出。
 - `/golden-behavior` 到 `/ability-chain?behavior=...` 的真实点击路径已通过浏览器验证。
