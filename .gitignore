@@ -3,6 +3,7 @@ node_modules/
 .next-dev.log
 .next-dev.err.log
 *.zip
+记录.txt
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

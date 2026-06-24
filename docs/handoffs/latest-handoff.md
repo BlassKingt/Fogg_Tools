@@ -32,7 +32,7 @@
 - 保留 Next.js pages router。
 - 创建 `/` 作为功能性的工具箱首页。
 - 将当前 `pages/index.js` 的流程移动到 `/golden-behavior`。
-- 将 `fuge_tools_2/fogg_tool_2_AbilityChain_MiniBehavior.html` 转换到 `/ability-chain`。
+- 将原独立 HTML 能力链工具转换到 `/ability-chain`。
 - 在黄金行为结果页添加到 `/ability-chain?behavior=...` 的连接。
 - 公开首版保持 client-only。
 
@@ -47,7 +47,7 @@
 - `pages/_app.js`：全局视觉变量、背景、字体和 focus state。
 - `pages/golden-behavior.js`：当前黄金行为探索器，含工具导航、localStorage 缓存、结果页重新寻找黄金行为入口，以及单个/多个黄金行为进入能力链的入口。
 - `pages/ability-chain.js`：React 版本能力链设计器，含工具导航、localStorage 缓存、来自黄金行为探索器的方案追加逻辑、当前方案移除、HTML 分析报告导出，以及 all-no 状态下的两个出口 CTA。
-- `fuge_tools_2/fogg_tool_2_AbilityChain_MiniBehavior.html`：独立 HTML 版本的能力链设计器。
+- 原迁移源目录 `fuge_tools_2/` 和 `Fogg_Tool_2/` 已从仓库移除；当前能力链以 `pages/ability-chain.js` 为唯一公开实现。
 - `package.json`：当前 Next.js 依赖配置。
 - GitHub：当前本地分支为 `main`，已推送到 `origin/main`；远端误推的 `master` 分支已删除。
 

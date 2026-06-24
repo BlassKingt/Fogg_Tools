@@ -20,7 +20,7 @@
 - `pages/_app.js` 定义统一的全局色板、背景、字体和 focus state。
 - `pages/golden-behavior.js` 包含当前黄金行为探索器，已加入工具导航和 localStorage 进度缓存；结果页提供“重新寻找黄金行为”入口。
 - `pages/ability-chain.js` 是 React 版本能力链设计器，已替代原临时承接页，并加入工具导航、localStorage 进度缓存、当前方案移除和 HTML 分析报告导出。
-- `fuge_tools_2/fogg_tool_2_AbilityChain_MiniBehavior.html` 包含独立 HTML 版本的能力链设计器。
+- 原独立 HTML 能力链工具已迁移进 `/ability-chain`，迁移源目录 `fuge_tools_2/` 和 `Fogg_Tool_2/` 已从仓库移除，避免公开仓库出现重复工具入口。
 - `package.json` 使用 Next.js 13.5.6 和 React 18.2.0。
 - 当前工作区已初始化为本地 git repository，当前分支为 `main`，并已推送到 `origin/main`。
 - 远端误推的 `master` 分支已删除，GitHub 当前只保留 `main` 分支。
