@@ -996,7 +996,8 @@ export default function AbilityChainPage() {
           background: #fff;
         }
 
-        .btn {
+        .btn,
+        :global(a.btn) {
           border: none;
           border-radius: 30px;
           padding: 12px 26px;
@@ -1010,6 +1011,7 @@ export default function AbilityChainPage() {
           justify-content: center;
           gap: 6px;
           white-space: nowrap;
+          text-decoration: none;
         }
 
         .btn:disabled {
@@ -1018,25 +1020,29 @@ export default function AbilityChainPage() {
           transform: none;
         }
 
-        .btn-primary {
+        .btn-primary,
+        :global(a.btn-primary) {
           background: var(--purple);
           color: #fff;
           box-shadow: 0 8px 20px rgba(65, 56, 105, 0.24);
         }
 
-        .btn-outline {
+        .btn-outline,
+        :global(a.btn-outline) {
           background: #fff;
           color: var(--purple);
           border: 2px solid var(--ft-line);
         }
 
-        .btn-gold {
+        .btn-gold,
+        :global(a.btn-gold) {
           background: #f2c14d;
           color: #4a3500;
           box-shadow: 0 8px 20px rgba(217, 155, 30, 0.24);
         }
 
-        .btn-sm {
+        .btn-sm,
+        :global(a.btn-sm) {
           padding: 7px 16px;
           font-size: 0.8rem;
         }

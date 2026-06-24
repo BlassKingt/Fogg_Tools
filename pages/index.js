@@ -20,6 +20,25 @@ const tools = [
   },
 ];
 
+const flowSteps = [
+  {
+    title: '愿望',
+    description: '先说清楚你想实现什么。',
+  },
+  {
+    title: '候选行为',
+    description: '列出可能帮助愿望发生的具体行动。',
+  },
+  {
+    title: '黄金行为',
+    description: '筛出影响大、也容易开始的行为。',
+  },
+  {
+    title: '突破设计',
+    description: '继续降低执行难度，让它真的做得起来。',
+  },
+];
+
 export default function ToolboxHome() {
   return (
     <>
@@ -33,12 +52,17 @@ export default function ToolboxHome() {
               先用黄金行为探索器找到“高影响 + 容易做”的行为，再把选中的行为带入能力链设计器，继续降低执行难度。
             </p>
           </div>
-          <div className="flow" aria-label="推荐连续流程">
-            <span>愿望</span>
-            <span>候选行为</span>
-            <span>黄金行为</span>
-            <span>突破设计</span>
-          </div>
+          <ol className="flow" aria-label="推荐连续流程">
+            {flowSteps.map((step, index) => (
+              <li key={step.title}>
+                <span className="flow-index">{index + 1}</span>
+                <span>
+                  <strong>{step.title}</strong>
+                  <small>{step.description}</small>
+                </span>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <section className="tools" aria-label="工具入口">
@@ -108,26 +132,58 @@ export default function ToolboxHome() {
 
           .flow {
             display: grid;
-            gap: 12px;
+            gap: 10px;
             align-content: center;
+            margin: 0;
+            list-style: none;
             background: rgba(255, 255, 255, 0.78);
             border: 1px solid var(--ft-line);
             border-radius: 8px;
-            padding: 24px;
+            padding: 22px;
             box-shadow: var(--ft-shadow);
             backdrop-filter: blur(14px);
           }
 
-          .flow span {
-            display: flex;
+          .flow li {
+            display: grid;
+            grid-template-columns: 34px minmax(0, 1fr);
+            gap: 12px;
             align-items: center;
-            justify-content: center;
-            min-height: 46px;
+            min-height: 62px;
             color: #3e3854;
             background: #fbf8f3;
             border: 1px solid #eee4d2;
             border-radius: 8px;
+            padding: 12px 14px;
+          }
+
+          .flow-index {
+            display: inline-flex;
+            width: 30px;
+            height: 30px;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            background: var(--ft-plum);
+            border-radius: 999px;
+            font-size: 0.78rem;
             font-weight: 800;
+          }
+
+          .flow strong,
+          .flow small {
+            display: block;
+          }
+
+          .flow strong {
+            font-size: 0.95rem;
+          }
+
+          .flow small {
+            margin-top: 3px;
+            color: var(--ft-muted);
+            font-size: 0.78rem;
+            line-height: 1.45;
           }
 
           .tools {
