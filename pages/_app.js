@@ -4,8 +4,8 @@ export default function App({ Component, pageProps }) {
       <Component {...pageProps} />
       <style jsx global>{`
         :root {
-          --ft-bg: #f7f3ec;
-          --ft-bg-soft: #fbf8f3;
+          --ft-bg: #f4f1f6;
+          --ft-bg-soft: #fbfaf7;
           --ft-surface: #ffffff;
           --ft-ink: #2d2940;
           --ft-muted: #746d82;
@@ -31,8 +31,8 @@ export default function App({ Component, pageProps }) {
           padding: 0;
           font-family: 'Avenir Next', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
           background:
-            radial-gradient(circle at 14% 4%, rgba(217, 155, 30, 0.12), transparent 28rem),
-            radial-gradient(circle at 92% 8%, rgba(79, 71, 120, 0.12), transparent 24rem),
+            radial-gradient(circle at 14% 4%, rgba(217, 155, 30, 0.045), transparent 28rem),
+            radial-gradient(circle at 92% 8%, rgba(79, 71, 120, 0.08), transparent 24rem),
             linear-gradient(180deg, var(--ft-bg) 0%, var(--ft-bg-soft) 48%, #ffffff 100%);
           color: var(--ft-ink);
           min-height: 100vh;

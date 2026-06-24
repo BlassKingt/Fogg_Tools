@@ -41,7 +41,7 @@ export default function SiteNav() {
           gap: 18px;
         }
 
-        .brand-link {
+        :global(a.brand-link) {
           display: inline-flex;
           align-items: center;
           gap: 12px;
@@ -63,17 +63,17 @@ export default function SiteNav() {
           box-shadow: 0 10px 24px rgba(65, 56, 105, 0.18);
         }
 
-        .brand-link strong,
-        .brand-link small {
+        :global(a.brand-link) strong,
+        :global(a.brand-link) small {
           display: block;
         }
 
-        .brand-link strong {
+        :global(a.brand-link) strong {
           font-size: 0.96rem;
           line-height: 1.2;
         }
 
-        .brand-link small {
+        :global(a.brand-link) small {
           color: #7d748f;
           font-size: 0.74rem;
           margin-top: 2px;

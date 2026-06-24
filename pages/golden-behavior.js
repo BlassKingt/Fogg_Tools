@@ -513,7 +513,7 @@ export default function Home() {
         .summary-card span { color: #6c5ce7; font-size: 0.7rem; }
         .summary-card.golden { border-color: #ffb300; background: #fffef5; }
         .gold-tag { color: #ffb300; font-weight: 700; }
-        .continue-link { display: inline-flex; align-items: center; justify-content: center; margin-top: 6px; color: #4a3500; background: #f2c14d; border-radius: 999px; padding: 7px 10px; font-size: 0.72rem; font-weight: 800; text-decoration: none; }
+        :global(a.continue-link) { display: inline-flex; align-items: center; justify-content: center; margin-top: 6px; color: #4a3500; background: #f2c14d; border-radius: 999px; padding: 7px 10px; font-size: 0.72rem; font-weight: 800; text-decoration: none; }
 
         .toast { text-align: center; margin: 16px 0 0; font-size: 0.9rem; font-weight: 500; }
         .toast.success { color: #00b894; }

@@ -136,7 +136,7 @@ export default function ToolboxHome() {
             gap: 18px;
           }
 
-          .tool-card {
+          :global(a.tool-card) {
             display: flex;
             min-height: 250px;
             flex-direction: column;
@@ -151,16 +151,16 @@ export default function ToolboxHome() {
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
           }
 
-          .tool-card:hover {
+          :global(a.tool-card:hover) {
             transform: translateY(-3px);
             box-shadow: 0 18px 42px rgba(65, 56, 105, 0.14);
           }
 
-          .tool-card.purple:hover {
+          :global(a.tool-card.purple:hover) {
             border-color: #8c82b5;
           }
 
-          .tool-card.gold:hover {
+          :global(a.tool-card.gold:hover) {
             border-color: var(--ft-amber);
           }
 
@@ -170,7 +170,7 @@ export default function ToolboxHome() {
             font-weight: 800;
           }
 
-          .tool-card.gold .eyebrow {
+          :global(a.tool-card.gold) .eyebrow {
             color: #8c620d;
           }
 
@@ -180,7 +180,7 @@ export default function ToolboxHome() {
             font-size: 1.45rem;
           }
 
-          .tool-card p {
+          :global(a.tool-card) p {
             margin: 0;
             color: var(--ft-muted);
             line-height: 1.75;
@@ -196,7 +196,7 @@ export default function ToolboxHome() {
             font-weight: 800;
           }
 
-          .tool-card.gold .cta {
+          :global(a.tool-card.gold) .cta {
             color: #4a3500;
             background: #f2c14d;
           }
@@ -234,7 +234,7 @@ export default function ToolboxHome() {
               padding: 12px 0 0;
             }
 
-            .tool-card {
+            :global(a.tool-card) {
               min-height: 220px;
             }
           }
