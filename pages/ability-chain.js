@@ -310,8 +310,10 @@ export default function AbilityChainPage() {
   const [schemeAnswers, setSchemeAnswers] = useState({});
   const [openNotes, setOpenNotes] = useState({});
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [reportMessage, setReportMessage] = useState('');
   const hydratedRef = useRef(false);
   const schemeTabsRef = useRef(null);
+  const reportUrlRef = useRef('');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -359,6 +361,10 @@ export default function AbilityChainPage() {
     };
     window.localStorage.setItem(ABILITY_STORAGE_KEY, JSON.stringify(payload));
   }, [hasHydrated, habitInput, habit, chainStep, weakLinks, ideas, ideaInputs, selectedIdeaIds, selectedSchemes, module2Expanded, activeSchemeIndex, schemeAnswers, openNotes]);
+
+  useEffect(() => () => {
+    if (reportUrlRef.current) URL.revokeObjectURL(reportUrlRef.current);
+  }, []);
 
   useEffect(() => {
     if (!hydratedRef.current) return;
@@ -552,6 +558,10 @@ export default function AbilityChainPage() {
   };
 
   const exportHtmlReport = () => {
+    if (!habit && selectedSchemes.length === 0) {
+      setReportMessage('先填写一个困难习惯，或至少保留一个突破方案，再生成报告。');
+      return;
+    }
     const html = buildReportHtml({
       goldenSnapshot: getGoldenSnapshot(),
       habit,
@@ -561,12 +571,22 @@ export default function AbilityChainPage() {
       schemeAnswers,
     });
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    if (reportUrlRef.current) URL.revokeObjectURL(reportUrlRef.current);
     const url = URL.createObjectURL(blob);
+    reportUrlRef.current = url;
+
+    const preview = window.open(url, '_blank', 'noopener,noreferrer');
     const link = document.createElement('a');
     link.href = url;
     link.download = `fogg-tools-report-${new Date().toISOString().slice(0, 10)}.html`;
+    link.style.display = 'none';
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    setReportMessage(preview
+      ? '报告已在新标签页打开，并已尝试下载 HTML 文件。'
+      : '报告已生成并尝试下载；如果浏览器拦截了新标签页，请允许弹窗后再试一次。'
+    );
   };
 
   const currentAnswers = currentScheme ? (schemeAnswers[currentScheme.id]?.answers || {}) : {};
@@ -591,6 +611,7 @@ export default function AbilityChainPage() {
             生成分析报告
           </button>
         </div>
+        {reportMessage && <p className="report-message">{reportMessage}</p>}
       </header>
 
       <section>
@@ -909,6 +930,19 @@ export default function AbilityChainPage() {
           display: flex;
           justify-content: center;
           margin-top: 16px;
+        }
+
+        .report-message {
+          width: fit-content;
+          max-width: min(520px, 100%);
+          margin: 10px auto 0;
+          color: var(--ft-success);
+          background: #effcf8;
+          border: 1px solid #bfeee1;
+          border-radius: 8px;
+          padding: 8px 12px;
+          font-size: 0.78rem;
+          font-weight: 700;
         }
 
         .section-title {
