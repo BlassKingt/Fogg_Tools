@@ -49,6 +49,7 @@
 - `pages/ability-chain.js`：React 版本能力链设计器，含工具导航、localStorage 缓存、来自黄金行为探索器的方案追加逻辑、当前方案移除、HTML 分析报告导出，以及 all-no 状态下的两个出口 CTA。
 - `fuge_tools_2/fogg_tool_2_AbilityChain_MiniBehavior.html`：独立 HTML 版本的能力链设计器。
 - `package.json`：当前 Next.js 依赖配置。
+- GitHub：当前本地分支为 `main`，已推送到 `origin/main`；远端误推的 `master` 分支已删除。
 
 ## 已验证
 
@@ -73,6 +74,7 @@
 - 浏览器验证：首页推荐路径为 4 个编号步骤，桌面端和 375px 移动端均无横向溢出。
 - 浏览器验证：能力链 all-no 状态下“寻找新的黄金行为”为金色按钮，`text-decoration: none`。
 - HTML 分析报告生成反馈修正后，`npm run build` 通过；按钮会尝试打开新标签页预览并触发 HTML 下载，同时显示页面内提示。Codex in-app browser 因下载/新标签页安全策略拦截自动点击验证，需人工点击一次确认下载体验。
+- GitHub 已推送到 `origin/main`；远端 `master` 分支已删除。
 
 ## 如何继续
 

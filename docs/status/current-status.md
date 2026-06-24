@@ -22,7 +22,8 @@
 - `pages/ability-chain.js` 是 React 版本能力链设计器，已替代原临时承接页，并加入工具导航、localStorage 进度缓存、当前方案移除和 HTML 分析报告导出。
 - `fuge_tools_2/fogg_tool_2_AbilityChain_MiniBehavior.html` 包含独立 HTML 版本的能力链设计器。
 - `package.json` 使用 Next.js 13.5.6 和 React 18.2.0。
-- 当前工作区已初始化为本地 git repository。
+- 当前工作区已初始化为本地 git repository，当前分支为 `main`，并已推送到 `origin/main`。
+- 远端误推的 `master` 分支已删除，GitHub 当前只保留 `main` 分支。
 
 ## 已验证
 
@@ -51,6 +52,7 @@
 - 浏览器已验证能力链 all-no 状态下“寻找新的黄金行为”为金色按钮，`text-decoration: none`，不再是默认蓝色下划线链接。
 - `npm run build` 已通过 HTML 分析报告生成反馈修正后的版本。
 - 浏览器已确认“生成分析报告”按钮处于可点击状态；自动点击因下载/新标签页安全策略被 Codex in-app browser 拦截，需人工点一次确认 HTML 下载。
+- GitHub 已推送到 `origin/main`；远端 `master` 分支已删除。
 
 ## 开放问题
 
