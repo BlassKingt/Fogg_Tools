@@ -13,7 +13,9 @@ export default function SiteNav() {
   return (
     <nav className="site-nav" aria-label="主导航">
       <Link href="/" className="brand-link">
-        <span className="brand-mark">FT</span>
+        <span className="brand-mark" aria-hidden="true">
+          <img src="/favicon.svg" alt="" />
+        </span>
         <span>
           <strong>Fogg Tools</strong>
           <small>行为设计工具箱</small>
@@ -55,12 +57,16 @@ export default function SiteNav() {
           height: 38px;
           align-items: center;
           justify-content: center;
-          color: #ffffff;
+          overflow: hidden;
           background: #4f4778;
           border-radius: 12px;
-          font-size: 0.82rem;
-          font-weight: 800;
           box-shadow: 0 10px 24px rgba(65, 56, 105, 0.18);
+        }
+
+        .brand-mark img {
+          display: block;
+          width: 100%;
+          height: 100%;
         }
 
         :global(a.brand-link) strong,
