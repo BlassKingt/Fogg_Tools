@@ -1,45 +1,73 @@
-# Fogg_Tools
-如果觉得好用，请给博主一个免费的⭐星星
-Please kindly mark a S⭐T⭐A⭐R⭐ if you find it's useful.
+# Fogg Tools
 
-Web APP Tools for Fogg behavior collection and Focus Map. Help you find your golden behaviors that lead to your dream.
+如果觉得好用，请给项目一个免费的 Star。
 
+Fogg Tools 是一个基于 Next.js 的福格行为设计工具箱。它把两个原本分开的工具整合到同一个工程里，既可以分别使用，也可以按推荐流程从“愿望”一路走到“突破设计”。
 
-Develop under .Next and you can deploy on Vercel as well.
+## 当前工具
 
-Local:
-使用方法：
-下载工程到本地，linux系统直接运行下面的命令。
-如果你是windows，请调出powershell，输入：
+- `/`：工具箱首页，提供推荐路径和两个工具入口。
+- `/golden-behavior`：黄金行为探索器。先收集候选行为，再通过影响度和容易度找到黄金行为。
+- `/ability-chain`：能力链设计器。分析困难习惯的薄弱环节，设计更容易执行的突破方案。
+
+## 推荐流程
+
+1. 写下一个愿望。
+2. 收集可能帮助愿望发生的候选行为。
+3. 用黄金行为探索器筛出“高影响 + 容易做”的行为。
+4. 将黄金行为带入能力链设计器，继续降低执行难度。
+5. 导出 HTML 分析报告，用于复盘、咨询记录或后续行动计划。
+
+你也可以直接进入任一工具。如果已经知道某个习惯很难坚持，可以直接使用能力链设计器。
+
+## 本地运行
+
+先安装依赖：
+
 ```bash
 npm install
+```
+
+启动开发服务：
+
+```bash
 npm run dev
 ```
 
-Browser:
-然后打开浏览器，输入这个地址，回车：
+然后在浏览器打开：
+
+```text
 http://localhost:3000
+```
 
+如果本地 3000 端口被占用，可以指定其它端口，例如：
 
-Preview:
+```bash
+npm run dev -- -p 3001
+```
 
-<img width="498" height="491" alt="01" src="https://github.com/user-attachments/assets/93091c9e-f7dc-4181-a54c-bc344d2f4042" />
+## 构建
 
-<img width="737" height="730" alt="02" src="https://github.com/user-attachments/assets/e15fc237-7934-4d7b-bdd5-aa8d317a1402" />
+```bash
+npm run build
+```
 
-<img width="1083" height="638" alt="03" src="https://github.com/user-attachments/assets/4a8e7422-cc3a-4269-96f9-f32a8b8b72ca" />
+构建通过后，可以部署到 Vercel。
 
+## 项目结构
 
-# Fogg_Tools 2
+```text
+pages/index.js            工具箱首页
+pages/golden-behavior.js  黄金行为探索器
+pages/ability-chain.js    能力链设计器
+components/SiteNav.js     统一导航
+docs/                     中文项目文档、计划、状态和交接记录
+```
 
-It's wrote by html, so you can just open it with your web-browser. 
-Enjoy the behavior improvement by Fogg tools!
-福格工具第二期，为了方便大家使用，我做成了纯html，也就是说下载后，直接双击点开即可！
-Preview:
+旧的独立 HTML 能力链工具已经迁移进 `/ability-chain`，仓库不再保留 `fuge_tools_2/` 或 `Fogg_Tool_2/` 这样的迁移源目录。
 
-<img width="990" height="956" alt="image" src="https://github.com/user-attachments/assets/6dfce7c4-6ac3-4e4b-a061-ae6d9e5b5e75" />
+## 说明
 
-<img width="917" height="956" alt="image" src="https://github.com/user-attachments/assets/c941c939-0f6e-4f4d-a054-b5522c0c1946" />
-
-<img width="911" height="967" alt="image" src="https://github.com/user-attachments/assets/56a631a9-0c10-4221-b304-f2332c30689c" />
-
+- 当前版本是 client-only，数据主要保存在浏览器 `localStorage`。
+- HTML 分析报告由浏览器本地生成，不需要后端服务。
+- `记录.txt` 属于本地临时记录文件，已加入 `.gitignore`，不会上传到 GitHub。
