@@ -10,6 +10,10 @@ function generateId() {
   return 'b_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
 }
 
+function getClientPoint(event) {
+  return event.touches?.[0] || event.changedTouches?.[0] || event;
+}
+
 const STEP_WISH = 0;
 const STEP_CLUSTER = 1;
 const STEP_IMPACT_SORT = 2;
@@ -126,7 +130,8 @@ export default function Home() {
     e.preventDefault();
     const pos = positions[id];
     if (!pos) return;
-    const coords = getCoords(e.clientX, e.clientY);
+    const point = getClientPoint(e);
+    const coords = getCoords(point.clientX, point.clientY);
     if (!coords) return;
     offsetRef.current = { x: coords.x - pos.x, y: coords.y - pos.y };
     setDragging({ id, type: 'focus' });
@@ -136,7 +141,8 @@ export default function Home() {
     if (step !== STEP_IMPACT_SORT) return;
     if (placed.has(id)) return;
     e.preventDefault();
-    const coords = getCoords(e.clientX, e.clientY);
+    const point = getClientPoint(e);
+    const coords = getCoords(point.clientX, point.clientY);
     if (!coords) return;
     const initX = ORIGIN_X; // 拖入时卡片先放在原点
     const initY = coords.y;
@@ -149,7 +155,9 @@ export default function Home() {
   useEffect(() => {
     if (!dragging) return;
     const onMove = (e) => {
-      const coords = getCoords(e.clientX, e.clientY);
+      if (e.cancelable) e.preventDefault();
+      const point = getClientPoint(e);
+      const coords = getCoords(point.clientX, point.clientY);
       if (!coords) return;
       setPositions(prev => {
         const cur = prev[dragging.id];
@@ -206,8 +214,8 @@ export default function Home() {
     window.localStorage.setItem(GOLDEN_STORAGE_KEY, JSON.stringify(payload));
   }, [hasHydrated, step, wish, behaviors, positions, placed]);
 
-  const getClusterPos = (count) => {
-    const cx = 300, cy = 300, r = 120 + Math.min(30, count * 5);
+  const getClusterPos = (count, radius) => {
+    const cx = 300, cy = 300, r = radius ?? 120 + Math.min(30, count * 5);
     return Array.from({ length: count }, (_, i) => {
       const angle = (2 * Math.PI / count) * i - Math.PI / 2;
       return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
@@ -282,16 +290,28 @@ export default function Home() {
                 <defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#9b8ec4" /></marker></defs>
                 {behaviors.map((b, i) => {
                   const pos = getClusterPos(behaviors.length)[i];
+                  const mobilePos = getClusterPos(behaviors.length, 190 + Math.min(30, behaviors.length * 3))[i];
                   const dx = 300 - pos.x, dy = 300 - pos.y, len = Math.sqrt(dx*dx+dy*dy);
+                  const mobileDx = 300 - mobilePos.x, mobileDy = 300 - mobilePos.y;
+                  const mobileLen = Math.sqrt(mobileDx*mobileDx+mobileDy*mobileDy);
                   if (len < 5) return null;
-                  return <line key={b.id} x1={pos.x+dx/len*35} y1={pos.y+dy/len*20} x2={300-dx/len*80} y2={300-dy/len*50} stroke="#9b8ec4" strokeWidth="2" strokeDasharray="6 4" markerEnd="url(#arrow)" />;
+                  return (
+                    <g key={b.id}>
+                      <line className="desktop-arrow" x1={pos.x+dx/len*35} y1={pos.y+dy/len*20} x2={300-dx/len*80} y2={300-dy/len*50} stroke="#9b8ec4" strokeWidth="2" strokeDasharray="6 4" markerEnd="url(#arrow)" />
+                      <line className="mobile-arrow" x1={mobilePos.x+mobileDx/mobileLen*28} y1={mobilePos.y+mobileDy/mobileLen*18} x2={300-mobileDx/mobileLen*62} y2={300-mobileDy/mobileLen*42} stroke="#9b8ec4" strokeWidth="2" strokeDasharray="6 4" markerEnd="url(#arrow)" />
+                    </g>
+                  );
                 })}
               </svg>
-              {behaviors.map((b, i) => (
-                <div key={b.id} className="bubble" style={{ left: getClusterPos(behaviors.length)[i].x, top: getClusterPos(behaviors.length)[i].y }} onClick={() => removeBehavior(b.id)} title="点击删除">
-                  <span className="bubble-num">{i + 1}</span>{b.text}
-                </div>
-              ))}
+              {behaviors.map((b, i) => {
+                const pos = getClusterPos(behaviors.length)[i];
+                const mobilePos = getClusterPos(behaviors.length, 190 + Math.min(30, behaviors.length * 3))[i];
+                return (
+                  <div key={b.id} className="bubble" style={{ '--desktop-left': `${pos.x / 6}%`, '--desktop-top': `${pos.y / 6}%`, '--mobile-left': `${mobilePos.x / 6}%`, '--mobile-top': `${mobilePos.y / 6}%` }} onClick={() => removeBehavior(b.id)} title="点击删除">
+                    <span className="bubble-num">{i + 1}</span>{b.text}
+                  </div>
+                );
+              })}
               <div className="center-cloud"><CloudSVG text={wish} small /></div>
             </div>
             <div className="add-bar">
@@ -349,7 +369,7 @@ export default function Home() {
                     <div key={b.id} className={`focus-card ${isGold ? 'golden' : ''} ${isDragging ? 'dragging' : ''}`}
                       style={{ left: p.x, top: p.y, zIndex }}
                       onMouseDown={e => onFocusMouseDown(b.id, e)}
-                      onTouchStart={e => onFocusMouseDown(b.id, e.touches[0])}>
+                      onTouchStart={e => onFocusMouseDown(b.id, e)}>
                       {b.text}
                     </div>
                   );
@@ -372,13 +392,13 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="side-pool">
+            <div className={`side-pool ${step === STEP_IMPACT_SORT ? 'pending-pool' : ''}`}>
               {step === STEP_IMPACT_SORT && (
                 <>
                   <h3>待排序卡片</h3>
                   <p className="pool-tip">拖到左边焦点图中 · 只能纵向移动</p>
                   {behaviors.filter(b => !placed.has(b.id)).map(b => (
-                    <div key={b.id} className="pool-card" onMouseDown={e => onPoolMouseDown(b.id, e)} onTouchStart={e => onPoolMouseDown(b.id, e.touches[0])}>{b.text}</div>
+                    <div key={b.id} className="pool-card" onMouseDown={e => onPoolMouseDown(b.id, e)} onTouchStart={e => onPoolMouseDown(b.id, e)}>{b.text}</div>
                   ))}
                 </>
               )}
@@ -464,7 +484,8 @@ export default function Home() {
         .cluster-step { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
         .cluster-canvas { position: relative; width: 600px; height: 600px; max-width: 90vw; max-height: 90vw; }
         .arrow-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .bubble { position: absolute; background: white; border-radius: 18px; padding: 12px 20px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 8px 22px rgba(65,56,105,0.08); cursor: pointer; border: 1px solid var(--ft-line); transform: translate(-50%, -50%); transition: all 0.2s; max-width: 160px; text-align: center; }
+        .mobile-arrow { display: none; }
+        .bubble { position: absolute; left: var(--desktop-left); top: var(--desktop-top); background: white; border-radius: 18px; padding: 12px 20px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 8px 22px rgba(65,56,105,0.08); cursor: pointer; border: 1px solid var(--ft-line); transform: translate(-50%, -50%); transition: all 0.2s; max-width: 160px; text-align: center; }
         .bubble:hover { box-shadow: 0 12px 28px rgba(65,56,105,0.14); border-color: #b9a9e8; }
         .bubble-num { position: absolute; top: -10px; right: -8px; background: var(--ft-plum); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
         .center-cloud { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; }
@@ -495,7 +516,7 @@ export default function Home() {
         .axis-x { position: absolute; height: 2px; background: #b9a9e8; opacity: 0; transition: opacity 0.3s; z-index: 1; }
         .axis-x.visible { opacity: 1; }
 
-        .focus-card { position: absolute; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 18px; padding: 14px 20px; font-size: 0.88rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.02); border: 1px solid rgba(255,255,255,0.8); cursor: grab; transform: translate(-50%, -50%); white-space: nowrap; transition: all 0.2s ease; user-select: none; }
+        .focus-card { position: absolute; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 18px; padding: 14px 20px; font-size: 0.88rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.02); border: 1px solid rgba(255,255,255,0.8); cursor: grab; transform: translate(-50%, -50%); white-space: nowrap; transition: all 0.2s ease; user-select: none; touch-action: none; }
         .focus-card:hover { background: white; box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-color: #b9a9e8; transform: translate(-50%, -50%) scale(1.03); }
         .focus-card.dragging { box-shadow: 0 16px 36px rgba(108,92,231,0.25); border-color: #6c5ce7; z-index: 100 !important; cursor: grabbing; transform: translate(-50%, -50%) scale(1.05); }
         .focus-card.golden { border-color: #ffb300; box-shadow: 0 0 24px rgba(255,179,0,0.4), 0 4px 12px rgba(0,0,0,0.06); background: #fffef5; animation: pulse 1.5s infinite; }
@@ -506,7 +527,7 @@ export default function Home() {
         .side-pool { width: 240px; background: rgba(255,255,255,0.86); border-radius: 18px; box-shadow: 0 10px 28px rgba(65,56,105,0.08); padding: 20px 14px; display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; border: 1px solid var(--ft-line); }
         .side-pool h3 { font-size: 0.9rem; color: var(--ft-plum); margin: 0 0 4px; text-align: center; }
         .pool-tip { font-size: 0.7rem; color: #9b8ec4; text-align: center; margin: 0; }
-        .pool-card { background: #faf8ff; border-radius: 14px; padding: 12px 16px; font-size: 0.85rem; cursor: grab; border: 1px solid #e8e2f5; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .pool-card { background: #faf8ff; border-radius: 14px; padding: 12px 16px; font-size: 0.85rem; cursor: grab; border: 1px solid #e8e2f5; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02); touch-action: none; user-select: none; }
         .pool-card:hover { border-color: #b9a9e8; box-shadow: 0 4px 12px rgba(0,0,0,0.06); background: white; }
         .summary-card { background: #fbf8f3; border-radius: 12px; padding: 12px 16px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px; border: 1px solid #eee4d2; }
         .summary-card strong { font-size: 0.85rem; }
@@ -534,38 +555,30 @@ export default function Home() {
           .cloud-container { max-width: 100%; overflow: hidden; }
           .cluster-step { align-items: stretch; gap: 16px; }
           .cluster-canvas {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
             width: 100%;
-            height: auto;
+            height: min(420px, 120vw);
             max-width: none;
             max-height: none;
-            padding: 4px 0;
           }
-          .arrow-svg,
-          .center-cloud { display: none; }
+          .desktop-arrow { display: none; }
+          .mobile-arrow { display: inline; }
+          .center-cloud :global(svg) { width: 124px; }
           .bubble {
-            position: relative;
-            left: auto !important;
-            top: auto !important;
-            transform: none;
-            max-width: none;
-            width: 100%;
-            min-height: 46px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 14px;
-            border-radius: 14px;
-            text-align: left;
+            left: var(--mobile-left);
+            top: var(--mobile-top);
+            width: max-content;
+            max-width: 104px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            line-height: 1.3;
           }
           .bubble-num {
-            position: static;
-            flex: 0 0 24px;
-            width: 24px;
-            height: 24px;
-            font-size: 0.75rem;
+            top: -8px;
+            right: -6px;
+            width: 19px;
+            height: 19px;
+            font-size: 0.65rem;
           }
           .add-bar { flex-direction: column; width: 100%; }
           .add-bar input { width: 100%; border-radius: 18px; }
@@ -580,6 +593,7 @@ export default function Home() {
           }
           .focus-inner { width: 480px; height: 460px; margin: 20px; }
           .side-pool { width: 100%; flex-direction: row; flex-wrap: wrap; max-height: 220px; padding: 16px; }
+          .side-pool.pending-pool { order: -1; }
           .side-pool h3,
           .pool-tip { flex-basis: 100%; }
           .pool-card,
