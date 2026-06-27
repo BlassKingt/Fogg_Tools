@@ -14,6 +14,13 @@ function getClientPoint(event) {
   return event.touches?.[0] || event.changedTouches?.[0] || event;
 }
 
+function getImpactSortMessage() {
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+  return isMobile
+    ? '下方是待排序卡片，请拖到上方焦点图（只能纵向移动）'
+    : '右侧是待排序卡片，请先拖入焦点图（只能纵向移动）';
+}
+
 const STEP_WISH = 0;
 const STEP_CLUSTER = 1;
 const STEP_IMPACT_SORT = 2;
@@ -82,7 +89,7 @@ export default function Home() {
     setPositions({});
     setPlaced(new Set());
     setStep(STEP_IMPACT_SORT);
-    showMsg('右侧是待排序卡片，请先拖入焦点图（只能纵向移动）', 'info');
+    showMsg(getImpactSortMessage(), 'info');
   }, [behaviors, showMsg]);
 
   const confirmCluster = useCallback(() => {
@@ -90,7 +97,7 @@ export default function Home() {
     setPositions({});
     setPlaced(new Set());
     setStep(STEP_IMPACT_SORT);
-    showMsg('右侧是待排序卡片，请先拖入焦点图（只能纵向移动）', 'info');
+    showMsg(getImpactSortMessage(), 'info');
   }, [behaviors, showMsg]);
 
   const confirmImpact = useCallback(() => {
@@ -180,6 +187,17 @@ export default function Home() {
       window.removeEventListener('touchend', onUp);
     };
   }, [dragging, step, getCoords]);
+
+  useEffect(() => {
+    if (step < STEP_IMPACT_SORT || step > STEP_RESULT) return;
+    if (typeof window === 'undefined' || !window.matchMedia('(max-width: 768px)').matches) return;
+    const map = focusRef.current;
+    if (!map) return;
+    const frame = window.requestAnimationFrame(() => {
+      map.scrollLeft = Math.max(0, (map.scrollWidth - map.clientWidth) / 2);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [step]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -392,11 +410,14 @@ export default function Home() {
               </div>
             </div>
 
-            <div className={`side-pool ${step === STEP_IMPACT_SORT ? 'pending-pool' : ''}`}>
+            <div className="side-pool">
               {step === STEP_IMPACT_SORT && (
                 <>
                   <h3>待排序卡片</h3>
-                  <p className="pool-tip">拖到左边焦点图中 · 只能纵向移动</p>
+                  <p className="pool-tip">
+                    <span className="desktop-copy">拖到左边焦点图中 · 只能纵向移动</span>
+                    <span className="mobile-copy">拖动到上方焦点图 · 只能纵向移动</span>
+                  </p>
                   {behaviors.filter(b => !placed.has(b.id)).map(b => (
                     <div key={b.id} className="pool-card" onMouseDown={e => onPoolMouseDown(b.id, e)} onTouchStart={e => onPoolMouseDown(b.id, e)}>{b.text}</div>
                   ))}
@@ -442,7 +463,7 @@ export default function Home() {
           <>
             {goldenBehaviors.length > 1 && (
               <Link
-                className="btn gold"
+                className="btn gold batch-continue-link"
                 href={{ pathname: '/ability-chain', query: { from: 'golden', behaviors: goldenBehaviorQuery } }}
                 onClick={transferAllGoldenBehaviors}
               >
@@ -527,6 +548,7 @@ export default function Home() {
         .side-pool { width: 240px; background: rgba(255,255,255,0.86); border-radius: 18px; box-shadow: 0 10px 28px rgba(65,56,105,0.08); padding: 20px 14px; display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; border: 1px solid var(--ft-line); }
         .side-pool h3 { font-size: 0.9rem; color: var(--ft-plum); margin: 0 0 4px; text-align: center; }
         .pool-tip { font-size: 0.7rem; color: #9b8ec4; text-align: center; margin: 0; }
+        .mobile-copy { display: none; }
         .pool-card { background: #faf8ff; border-radius: 14px; padding: 12px 16px; font-size: 0.85rem; cursor: grab; border: 1px solid #e8e2f5; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.02); touch-action: none; user-select: none; }
         .pool-card:hover { border-color: #b9a9e8; box-shadow: 0 4px 12px rgba(0,0,0,0.06); background: white; }
         .summary-card { background: #fbf8f3; border-radius: 12px; padding: 12px 16px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px; border: 1px solid #eee4d2; }
@@ -535,6 +557,7 @@ export default function Home() {
         .summary-card.golden { border-color: #ffb300; background: #fffef5; }
         .gold-tag { color: #ffb300; font-weight: 700; }
         :global(a.continue-link) { display: inline-flex; align-items: center; justify-content: center; margin-top: 6px; color: #4a3500; background: #f2c14d; border-radius: 999px; padding: 7px 10px; font-size: 0.72rem; font-weight: 800; text-decoration: none; }
+        :global(a.batch-continue-link) { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 12px 28px; color: #4a3500; background: #f2c14d; border-radius: 30px; box-shadow: 0 8px 20px rgba(217,155,30,0.24); font-size: 0.95rem; font-weight: 700; line-height: 1.2; text-align: center; text-decoration: none; }
 
         .toast { text-align: center; margin: 16px 0 0; font-size: 0.9rem; font-weight: 500; }
         .toast.success { color: #00b894; }
@@ -593,13 +616,15 @@ export default function Home() {
           }
           .focus-inner { width: 480px; height: 460px; margin: 20px; }
           .side-pool { width: 100%; flex-direction: row; flex-wrap: wrap; max-height: 220px; padding: 16px; }
-          .side-pool.pending-pool { order: -1; }
           .side-pool h3,
           .pool-tip { flex-basis: 100%; }
+          .desktop-copy { display: none; }
+          .mobile-copy { display: inline; }
           .pool-card,
           .summary-card { flex: 1 1 150px; }
           .action-bar { margin-top: 14px; }
           .btn { padding: 10px 20px; font-size: 0.85rem; }
+          :global(a.batch-continue-link) { width: 100%; max-width: 320px; }
         }
       `}</style>
       </div>

@@ -19,12 +19,13 @@
 - `components/SiteNav.js` 是三页共用的顶部导航，包含工具箱、黄金行为、能力链三处入口和当前页高亮。
 - `pages/_app.js` 定义统一的全局色板、背景、字体和 focus state。
 - `pages/golden-behavior.js` 包含当前黄金行为探索器，已加入工具导航和 localStorage 进度缓存；结果页提供“重新寻找黄金行为”入口。
-- `pages/golden-behavior.js` 的移动端使用独立环绕坐标展示候选行为，并通过 touch 坐标、`touch-action` 和待排序区前置支持手机拖拽。
+- `pages/golden-behavior.js` 的移动端使用独立环绕坐标展示候选行为，并通过 touch 坐标和 `touch-action` 支持手机拖拽；待排序区位于焦点图下方，焦点图进入时自动居中。
 - `pages/ability-chain.js` 是 React 版本能力链设计器，已替代原临时承接页，并加入工具导航、localStorage 进度缓存、当前方案移除和 HTML 分析报告导出。
 - 原独立 HTML 能力链工具已迁移进 `/ability-chain`，迁移源目录 `fuge_tools_2/` 和 `Fogg_Tool_2/` 已从仓库移除，避免公开仓库出现重复工具入口。
 - `package.json` 使用 Next.js 13.5.6 和 React 18.2.0。
 - 当前工作区已初始化为本地 git repository，当前分支为 `main`，并已推送到 `origin/main`。
 - 远端误推的 `master` 分支已删除，GitHub 当前只保留 `main` 分支。
+- 调整移动端结果页和焦点图前的版本已保存为 Git tag：`baseline-mobile-interactions-20260627`，对应提交 `d96bee5`，并已推送到 GitHub。
 
 ## 已验证
 
@@ -59,6 +60,9 @@
 - `npm run build` 已通过移动端云朵环绕视觉和触控拖拽修正后的版本。
 - 浏览器已验证 `/golden-behavior` 在 375px 移动端：愿望云朵和移动端连线可见，4 个候选行为以绝对定位环绕云朵，页面无横向溢出。
 - 浏览器已实际把第一轮 3 张待排序卡片依次拖入焦点图，并在第二轮触发横向位置变化；桌面端仍只显示原桌面连线，600px 画布和页面宽度正常。
+- `npm run build` 已通过结果页批量按钮、移动端文案和焦点图居中修正后的版本。
+- 浏览器已验证 375px 移动端：待排序区在焦点图下方，显示“下方/上方”专用文案，焦点图实际 `scrollLeft` 与理论居中值均为 95px，页面无横向溢出。
+- 浏览器已验证两个黄金行为的结果态：批量送出按钮在移动端为 320×44px，在桌面端为 238×44px；两端均为金色按钮、无下划线且可见。
 
 ## 开放问题
 
