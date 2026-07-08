@@ -4,7 +4,10 @@ import {
   ANCHOR_PERIODS,
   ANCHOR_PROMPTS_STORAGE_KEY,
   ANCHOR_STEPS,
+  buildRecipeText,
+  canCreateMicroRecipe,
   createInitialAnchorState,
+  getReliableAnchors,
   makeId,
 } from '../lib/anchorPrompts';
 
@@ -33,6 +36,7 @@ export default function AnchorPromptsPage() {
     () => ANCHOR_STEPS.find(step => step.id === state.step) || ANCHOR_STEPS[0],
     [state.step]
   );
+  const reliableAnchors = useMemo(() => getReliableAnchors(state.habits), [state.habits]);
 
   const goToStep = step => setState(prev => ({ ...prev, step }));
 
@@ -82,6 +86,51 @@ export default function AnchorPromptsPage() {
         ),
       },
     }));
+  };
+
+  const updateMicroDraft = patch => {
+    setState(prev => ({
+      ...prev,
+      microDraft: { ...prev.microDraft, ...patch },
+    }));
+  };
+
+  const updateMicroCandidate = (index, value) => {
+    setState(prev => {
+      const candidates = [...prev.microDraft.candidates];
+      candidates[index] = value;
+      return { ...prev, microDraft: { ...prev.microDraft, candidates } };
+    });
+  };
+
+  const saveMicroRecipe = () => {
+    setState(prev => {
+      if (!canCreateMicroRecipe(prev.microDraft)) return prev;
+      const anchor = getReliableAnchors(prev.habits).find(item => item.id === prev.microDraft.anchorId);
+      if (!anchor) return prev;
+      const action = prev.microDraft.selectedCandidate.trim();
+      const recipe = {
+        id: makeId('micro'),
+        type: 'micro',
+        periodId: anchor.periodId,
+        periodLabel: anchor.periodLabel,
+        anchorText: anchor.text.trim(),
+        action,
+        text: buildRecipeText(anchor.text.trim(), action),
+        note: prev.microDraft.note.trim(),
+        completed: false,
+      };
+      return {
+        ...prev,
+        microRecipes: [...prev.microRecipes, recipe].slice(0, 3),
+        microDraft: {
+          anchorId: '',
+          candidates: ['', '', ''],
+          selectedCandidate: '',
+          note: '',
+        },
+      };
+    });
   };
 
   return (
@@ -152,7 +201,74 @@ export default function AnchorPromptsPage() {
                 </div>
               </div>
             )}
-            {state.step !== 'timeline' && (
+            {state.step === 'micro' && (
+              <div className="recipe-editor">
+                <p className="section-copy">选择一个可靠锚点，再写下几个自然跟在它后面的小动作。默认先做 3 张配方卡。</p>
+                <div className="recipe-grid">
+                  <section className="input-card">
+                    <h3>选择锚点</h3>
+                    <select value={state.microDraft.anchorId} onChange={event => updateMicroDraft({ anchorId: event.target.value })}>
+                      <option value="">选择一个可靠锚点</option>
+                      {reliableAnchors.map(anchor => (
+                        <option key={anchor.id} value={anchor.id}>
+                          {anchor.periodLabel} · {anchor.text}
+                        </option>
+                      ))}
+                    </select>
+
+                    <h3>候选新微行为</h3>
+                    {state.microDraft.candidates.map((candidate, index) => (
+                      <label key={index} className="stack-field">
+                        <span>候选 {index + 1}</span>
+                        <input
+                          value={candidate}
+                          placeholder="例如：做一次深呼吸"
+                          onChange={event => updateMicroCandidate(index, event.target.value)}
+                        />
+                      </label>
+                    ))}
+
+                    <h3>选择最终微行为</h3>
+                    <select value={state.microDraft.selectedCandidate} onChange={event => updateMicroDraft({ selectedCandidate: event.target.value })}>
+                      <option value="">选择最喜欢、最简单的一个</option>
+                      {state.microDraft.candidates.filter(item => item.trim()).map(candidate => (
+                        <option key={candidate} value={candidate.trim()}>
+                          {candidate.trim()}
+                        </option>
+                      ))}
+                    </select>
+
+                    <label className="stack-field">
+                      <span>备注，可选</span>
+                      <textarea value={state.microDraft.note} onChange={event => updateMicroDraft({ note: event.target.value })} />
+                    </label>
+
+                    <button type="button" className="primary" onClick={saveMicroRecipe} disabled={!canCreateMicroRecipe(state.microDraft)}>
+                      保存这张配方
+                    </button>
+                  </section>
+
+                  <section className="recipe-list">
+                    <h3>已生成的微习惯配方</h3>
+                    {state.microRecipes.length === 0 && <p className="empty-copy">先保存第一张配方。</p>}
+                    {state.microRecipes.map(recipe => (
+                      <article key={recipe.id} className="recipe-card">
+                        <span>{recipe.periodLabel}</span>
+                        <strong>{recipe.text}</strong>
+                        {recipe.note && <p>{recipe.note}</p>}
+                      </article>
+                    ))}
+                    <div className="actions">
+                      <button type="button" className="secondary" onClick={() => goToStep('timeline')}>返回时间轴</button>
+                      <button type="button" className="primary" onClick={() => goToStep('pearl')} disabled={state.microRecipes.length < 3}>
+                        下一步：创建珍珠习惯
+                      </button>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            )}
+            {state.step !== 'timeline' && state.step !== 'micro' && (
               <p className="empty-copy">这个步骤会在下一轮实现中接上配方和珍珠习惯流程。</p>
             )}
           </section>
@@ -361,6 +477,102 @@ export default function AnchorPromptsPage() {
           justify-content: flex-end;
           gap: 10px;
           flex-wrap: wrap;
+        }
+
+        .recipe-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+          gap: 16px;
+          align-items: start;
+        }
+
+        .input-card,
+        .recipe-list,
+        .recipe-card {
+          background: #fffdf9;
+          border: 1px solid #eee4d2;
+          border-radius: 8px;
+        }
+
+        .input-card,
+        .recipe-list {
+          padding: 16px;
+        }
+
+        .input-card {
+          display: grid;
+          gap: 12px;
+        }
+
+        .input-card h3,
+        .recipe-list h3 {
+          margin: 0;
+          font-size: 1rem;
+        }
+
+        .stack-field {
+          display: grid;
+          gap: 6px;
+        }
+
+        .stack-field span {
+          color: #4f4778;
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        select,
+        textarea {
+          width: 100%;
+          color: var(--ft-ink);
+          background: #fff;
+          border: 1px solid var(--ft-line);
+          border-radius: 8px;
+          padding: 10px 11px;
+        }
+
+        textarea {
+          min-height: 82px;
+          resize: vertical;
+        }
+
+        button:disabled {
+          cursor: not-allowed;
+          opacity: 0.48;
+        }
+
+        .recipe-list {
+          display: grid;
+          gap: 10px;
+        }
+
+        .recipe-card {
+          display: grid;
+          gap: 6px;
+          padding: 12px;
+        }
+
+        .recipe-card span {
+          color: var(--ft-muted);
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        .recipe-card strong {
+          line-height: 1.55;
+        }
+
+        .recipe-card p {
+          margin: 0;
+          color: var(--ft-muted);
+          font-size: 0.86rem;
+          line-height: 1.6;
+        }
+
+        @media (max-width: 900px) {
+          .recipe-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         @media (max-width: 760px) {
