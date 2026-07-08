@@ -4,8 +4,10 @@ import {
   ANCHOR_PERIODS,
   ANCHOR_PROMPTS_STORAGE_KEY,
   ANCHOR_STEPS,
+  buildPearlText,
   buildRecipeText,
   canCreateMicroRecipe,
+  canCreatePearlRecipe,
   createInitialAnchorState,
   getReliableAnchors,
   makeId,
@@ -128,6 +130,43 @@ export default function AnchorPromptsPage() {
           candidates: ['', '', ''],
           selectedCandidate: '',
           note: '',
+        },
+      };
+    });
+  };
+
+  const updateAnnoyance = (index, value) => {
+    setState(prev => {
+      const annoyances = [...prev.annoyances];
+      annoyances[index] = value;
+      return { ...prev, annoyances };
+    });
+  };
+
+  const updatePearlCandidate = (index, value) => {
+    setState(prev => {
+      const pearlCandidates = [...prev.pearlCandidates];
+      pearlCandidates[index] = value;
+      return { ...prev, pearlCandidates };
+    });
+  };
+
+  const savePearlRecipe = () => {
+    setState(prev => {
+      if (!canCreatePearlRecipe(prev.selectedAnnoyance, prev.pearlCandidates)) return prev;
+      const action = prev.pearlCandidates.find(item => item.trim()).trim();
+      return {
+        ...prev,
+        pearlRecipe: {
+          id: makeId('pearl'),
+          type: 'pearl',
+          periodId: 'annoyance',
+          periodLabel: '烦恼出现时',
+          anchorText: prev.selectedAnnoyance.trim(),
+          action,
+          text: buildPearlText(prev.selectedAnnoyance.trim(), action),
+          note: '',
+          completed: false,
         },
       };
     });
@@ -268,7 +307,56 @@ export default function AnchorPromptsPage() {
                 </div>
               </div>
             )}
-            {state.step !== 'timeline' && state.step !== 'micro' && (
+            {state.step === 'pearl' && (
+              <div className="recipe-editor">
+                <p className="section-copy">把无法快速消除的烦恼当成提示。先列出经常困扰你的事，再选一个最频繁、最烦人的事项。</p>
+                <div className="recipe-grid">
+                  <section className="input-card">
+                    <h3>烦恼清单</h3>
+                    {state.annoyances.map((annoyance, index) => (
+                      <label key={index} className="stack-field">
+                        <span>烦恼 {index + 1}</span>
+                        <input value={annoyance} placeholder="例如：排长队、噪音、等人迟到" onChange={event => updateAnnoyance(index, event.target.value)} />
+                      </label>
+                    ))}
+
+                    <h3>选择一个烦恼</h3>
+                    <select value={state.selectedAnnoyance} onChange={event => setState(prev => ({ ...prev, selectedAnnoyance: event.target.value }))}>
+                      <option value="">选择最频繁、最烦人的一个</option>
+                      {state.annoyances.filter(item => item.trim()).map(item => (
+                        <option key={item} value={item.trim()}>{item.trim()}</option>
+                      ))}
+                    </select>
+                  </section>
+
+                  <section className="input-card">
+                    <h3>有益替代动作</h3>
+                    {state.pearlCandidates.map((candidate, index) => (
+                      <label key={index} className="stack-field">
+                        <span>选项 {index + 1}</span>
+                        <input value={candidate} placeholder="例如：放松肩颈、单腿站立 10 秒" onChange={event => updatePearlCandidate(index, event.target.value)} />
+                      </label>
+                    ))}
+                    <button type="button" className="primary" onClick={savePearlRecipe} disabled={!canCreatePearlRecipe(state.selectedAnnoyance, state.pearlCandidates)}>
+                      保存珍珠习惯
+                    </button>
+                    {state.pearlRecipe && (
+                      <article className="recipe-card pearl">
+                        <span>珍珠习惯</span>
+                        <strong>{state.pearlRecipe.text}</strong>
+                      </article>
+                    )}
+                    <div className="actions">
+                      <button type="button" className="secondary" onClick={() => goToStep('micro')}>返回微习惯配方</button>
+                      <button type="button" className="primary" onClick={() => goToStep('result')} disabled={!state.pearlRecipe}>
+                        查看今日实践时间轴
+                      </button>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            )}
+            {state.step !== 'timeline' && state.step !== 'micro' && state.step !== 'pearl' && (
               <p className="empty-copy">这个步骤会在下一轮实现中接上配方和珍珠习惯流程。</p>
             )}
           </section>
@@ -567,6 +655,11 @@ export default function AnchorPromptsPage() {
           color: var(--ft-muted);
           font-size: 0.86rem;
           line-height: 1.6;
+        }
+
+        .recipe-card.pearl {
+          border-color: #f2c14d;
+          background: #fff8df;
         }
 
         @media (max-width: 900px) {
