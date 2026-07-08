@@ -25,7 +25,7 @@
 
 项目目标是成为一个可公开部署到 Vercel 的福格行为设计工具箱。
 
-已确定采用方案 C：两个工具保持独立可用，同时推荐从愿望到黄金行为、再到突破设计的连续流程。
+已确定采用方案 C：工具保持独立可用，同时推荐从愿望到黄金行为、再到突破设计、再到锚点提示配方的连续流程。
 
 ## 当前技术方向
 
@@ -34,22 +34,27 @@
 - 将当前 `pages/index.js` 的流程移动到 `/golden-behavior`。
 - 将原独立 HTML 能力链工具转换到 `/ability-chain`。
 - 在黄金行为结果页添加到 `/ability-chain?behavior=...` 的连接。
+- 新增 `/anchor-prompts` 作为第三个工具：锚点提示设计器。
 - 公开首版保持 client-only。
 
 ## 当前状态
 
-文档体系已经建立，并已改为中文主文档。核心整合已完成：`/` 是工具箱首页，`/golden-behavior` 是黄金行为探索器，`/ability-chain` 是 React 版本能力链设计器，并支持从黄金行为带参进入突破设计。统一导航、默认缓存、当前方案移除和正式 HTML 分析报告已完成第一版。功能 baseline 已保存为本地 git commit `5f0a411 baseline before visual polish`。第一轮视觉反馈后，已修复默认蓝色下划线泄漏，并把背景从偏黄渐变收敛为更中性的暖灰纸面底。首页推荐路径已改为编号步骤说明，能力链 all-no 状态的“寻找新的黄金行为”已修为金色按钮。HTML 分析报告按钮已增加新标签页预览和页面内生成反馈。黄金行为探索器移动端保留愿望云朵、连线和候选行为环绕视觉，焦点图保留原坐标系统并支持 touch 拖拽。
+文档体系已经建立，并已改为中文主文档。核心整合已完成：`/` 是工具箱首页，`/golden-behavior` 是黄金行为探索器，`/ability-chain` 是 React 版本能力链设计器，并支持从黄金行为带参进入突破设计。第三个工具 `锚点提示设计器` 已在隔离分支 `codex/anchor-prompts` 实现，路由为 `/anchor-prompts`，支持习惯时间轴、3 张微习惯配方、1 张珍珠习惯、实践时间轴和轻量打卡。统一导航、默认缓存、当前方案移除和正式 HTML 分析报告已完成第一版。功能 baseline 已保存为本地 git commit `5f0a411 baseline before visual polish`。第一轮视觉反馈后，已修复默认蓝色下划线泄漏，并把背景从偏黄渐变收敛为更中性的暖灰纸面底。首页推荐路径已改为编号步骤说明，能力链 all-no 状态的“寻找新的黄金行为”已修为金色按钮。HTML 分析报告按钮已增加新标签页预览和页面内生成反馈，并已加入“锚点提示设计”章节。黄金行为探索器移动端保留愿望云朵、连线和候选行为环绕视觉，焦点图保留原坐标系统并支持 touch 拖拽。
 
 重要文件：
 
-- `pages/index.js`：工具箱首页。
-- `components/SiteNav.js`：三页共用顶部导航。
+- `pages/index.js`：工具箱首页，包含 3 张工具卡和 5 步推荐路径。
+- `components/SiteNav.js`：四页共用顶部导航；移动端会换成两列，避免四个入口挤压。
 - `pages/_app.js`：全局视觉变量、背景、字体和 focus state。
 - `pages/golden-behavior.js`：当前黄金行为探索器，含工具导航、localStorage 缓存、结果页重新寻找黄金行为入口，以及单个/多个黄金行为进入能力链的入口。移动端不要缩放焦点图坐标系统；候选行为使用独立环绕坐标，焦点图面板内部横向滚动并在进入时自动居中，拖拽统一读取 mouse/touch 坐标。
 - `pages/ability-chain.js`：React 版本能力链设计器，含工具导航、localStorage 缓存、来自黄金行为探索器的方案追加逻辑、当前方案移除、HTML 分析报告导出，以及 all-no 状态下的两个出口 CTA。
+- `pages/anchor-prompts.js`：第三工具页面，包含 localStorage 缓存、时间轴、可靠锚点、3 张微习惯配方、珍珠习惯、实践时间轴和轻量打卡。
+- `lib/anchorPrompts.js`：第三工具的常量和纯 helper，包括 7 个时段、初始状态、配方文本、可靠锚点读取和实践时间轴排序。
+- `docs/superpowers/specs/2026-07-09-anchor-prompts-design.md`：第三工具设计文档。
+- `docs/superpowers/plans/2026-07-09-anchor-prompts-implementation.md`：第三工具实施计划。
 - 原迁移源目录 `fuge_tools_2/` 和 `Fogg_Tool_2/` 已从仓库移除；当前能力链以 `pages/ability-chain.js` 为唯一公开实现。
 - `package.json`：当前 Next.js 依赖配置。
-- GitHub：当前本地分支为 `main`，已推送到 `origin/main`；远端误推的 `master` 分支已删除。
+- GitHub：`main` 已推送到 `origin/main`；远端误推的 `master` 分支已删除。第三工具当前开发分支是 `codex/anchor-prompts`，尚未合并回 `main`。
 - 移动端结果页和焦点图继续调整前的备份 tag 为 `baseline-mobile-interactions-20260627`，对应提交 `d96bee5`，已推送到 GitHub。
 
 ## 已验证
@@ -85,7 +90,13 @@
 - 结果页批量按钮、移动端文案和焦点图居中修正后，`npm run build` 通过。
 - 浏览器验证：375px 下待排序区位于焦点图下方，移动端显示“下方/上方”文案；焦点图 `scrollLeft` 和理论居中值均为 95px。
 - 浏览器验证：两个黄金行为时，批量送出按钮在移动端和桌面端均显示为金色按钮、无下划线且可见；桌面端无横向溢出。
+- 第三工具实现后，`npm run build` 通过，build 输出包含 `/`、`/golden-behavior`、`/ability-chain`、`/anchor-prompts`。
+- 浏览器验证：桌面端 `/` 显示 3 张工具卡、5 步推荐路径和四个导航入口；无默认蓝色下划线链接，无横向溢出。
+- 浏览器验证：桌面端 `/anchor-prompts` 当前导航高亮正确，时间轴初始显示 7 个时段，无横向溢出。
+- 浏览器验证：375px 移动端 `/anchor-prompts` 顶部导航为两列，步骤导航为两列，时间轴为单列，无横向溢出。
+- 浏览器实际跑通第三工具核心流程：添加 3 个可靠锚点，创建 3 张微习惯配方，创建 1 张珍珠习惯，进入实践时间轴，点击 2 个打卡；刷新后仍显示 4 张配方和 `2 / 4 已完成`。
+- 代码级检查确认 HTML 分析报告包含“锚点提示设计”章节，会读取 `fogg-tools-anchor-prompts-state-v1` 并展示配方文本和完成状态。Codex in-app browser 安全策略拦截了报告按钮的新标签页/下载动作，需人工确认最终下载体验。
 
 ## 如何继续
 
-下一步建议先人工点击一次“生成分析报告”，确认新标签页预览和 HTML 下载体验；再完整跑一次黄金行为结果页，复核“继续到突破设计”按钮观感；然后在真实手机上复核黄金行为焦点图的触控拖拽手感，最后做 Vercel 部署前检查。
+下一步建议先人工浏览 `/anchor-prompts`，确认第三工具的文案节奏、时间轴观感和打卡按钮；再人工点击一次“生成分析报告”，确认新标签页预览和 HTML 下载体验中包含“锚点提示设计”章节；最后将 `codex/anchor-prompts` 合并回 `main` 并做 Vercel 部署前检查。
