@@ -9,6 +9,7 @@ import {
   canCreateMicroRecipe,
   canCreatePearlRecipe,
   createInitialAnchorState,
+  getPracticeRecipes,
   getReliableAnchors,
   makeId,
 } from '../lib/anchorPrompts';
@@ -39,6 +40,7 @@ export default function AnchorPromptsPage() {
     [state.step]
   );
   const reliableAnchors = useMemo(() => getReliableAnchors(state.habits), [state.habits]);
+  const practiceRecipes = useMemo(() => getPracticeRecipes(state), [state]);
 
   const goToStep = step => setState(prev => ({ ...prev, step }));
 
@@ -170,6 +172,18 @@ export default function AnchorPromptsPage() {
         },
       };
     });
+  };
+
+  const toggleRecipeDone = recipeId => {
+    setState(prev => ({
+      ...prev,
+      microRecipes: prev.microRecipes.map(recipe =>
+        recipe.id === recipeId ? { ...recipe, completed: !recipe.completed } : recipe
+      ),
+      pearlRecipe: prev.pearlRecipe && prev.pearlRecipe.id === recipeId
+        ? { ...prev.pearlRecipe, completed: !prev.pearlRecipe.completed }
+        : prev.pearlRecipe,
+    }));
   };
 
   return (
@@ -356,8 +370,37 @@ export default function AnchorPromptsPage() {
                 </div>
               </div>
             )}
-            {state.step !== 'timeline' && state.step !== 'micro' && state.step !== 'pearl' && (
-              <p className="empty-copy">这个步骤会在下一轮实现中接上配方和珍珠习惯流程。</p>
+            {state.step === 'result' && (
+              <div className="practice-view">
+                <div className="result-summary">
+                  <div>
+                    <p className="step-label">三步已完成</p>
+                    <h3>你的今日实践时间轴</h3>
+                    <p>如果完成了某项，可以回来在对应配方上打卡。</p>
+                  </div>
+                  <strong>{practiceRecipes.filter(recipe => recipe.completed).length} / {practiceRecipes.length} 已完成</strong>
+                </div>
+
+                <div className="practice-timeline">
+                  {practiceRecipes.map(recipe => (
+                    <article key={recipe.id} className={`practice-card ${recipe.type === 'pearl' ? 'pearl' : ''} ${recipe.completed ? 'done' : ''}`}>
+                      <div className="timeline-dot" aria-hidden="true" />
+                      <div>
+                        <span>{recipe.periodLabel} · {recipe.type === 'pearl' ? recipe.anchorText : `${recipe.anchorText}之后`}</span>
+                        <strong>{recipe.text}</strong>
+                        {recipe.note && <p>{recipe.note}</p>}
+                      </div>
+                      <button type="button" onClick={() => toggleRecipeDone(recipe.id)}>
+                        {recipe.completed ? '已完成' : '完成后打卡'}
+                      </button>
+                    </article>
+                  ))}
+                </div>
+
+                <div className="actions">
+                  <button type="button" className="secondary" onClick={() => goToStep('pearl')}>继续调整</button>
+                </div>
+              </div>
             )}
           </section>
         </section>
@@ -662,6 +705,131 @@ export default function AnchorPromptsPage() {
           background: #fff8df;
         }
 
+        .practice-view {
+          display: grid;
+          gap: 18px;
+        }
+
+        .result-summary {
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          align-items: flex-start;
+          background: #fffdf9;
+          border: 1px solid #eee4d2;
+          border-radius: 8px;
+          padding: 16px;
+        }
+
+        .result-summary h3 {
+          margin: 0 0 6px;
+          font-size: 1.4rem;
+        }
+
+        .result-summary p {
+          margin: 0;
+          color: var(--ft-muted);
+          line-height: 1.6;
+        }
+
+        .result-summary > strong {
+          white-space: nowrap;
+          color: #4a3500;
+          background: #fff8df;
+          border: 1px solid #f2c14d;
+          border-radius: 999px;
+          padding: 8px 12px;
+        }
+
+        .practice-timeline {
+          position: relative;
+          display: grid;
+          gap: 14px;
+          padding-left: 28px;
+        }
+
+        .practice-timeline::before {
+          content: '';
+          position: absolute;
+          left: 9px;
+          top: 8px;
+          bottom: 8px;
+          width: 3px;
+          background: #eadfce;
+          border-radius: 999px;
+        }
+
+        .practice-card {
+          position: relative;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 12px;
+          align-items: center;
+          background: #fffdf9;
+          border: 1px solid #eee4d2;
+          border-radius: 8px;
+          padding: 14px;
+        }
+
+        .practice-card.pearl {
+          border-color: #f2c14d;
+          background: #fff8df;
+        }
+
+        .practice-card.done {
+          border-color: rgba(22, 133, 111, 0.38);
+          background: rgba(22, 133, 111, 0.08);
+        }
+
+        .timeline-dot {
+          position: absolute;
+          left: -26px;
+          top: 20px;
+          width: 17px;
+          height: 17px;
+          background: var(--ft-plum);
+          border: 3px solid #fff;
+          border-radius: 999px;
+        }
+
+        .practice-card.pearl .timeline-dot {
+          background: #f2c14d;
+        }
+
+        .practice-card span,
+        .practice-card strong,
+        .practice-card p {
+          display: block;
+        }
+
+        .practice-card span {
+          color: var(--ft-muted);
+          font-size: 0.78rem;
+          font-weight: 800;
+        }
+
+        .practice-card strong {
+          margin-top: 5px;
+          line-height: 1.55;
+        }
+
+        .practice-card button {
+          min-height: 40px;
+          color: #4d4564;
+          background: #fff;
+          border: 1px solid var(--ft-line);
+          border-radius: 999px;
+          padding: 8px 14px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        .practice-card.done button {
+          color: #fff;
+          background: var(--ft-success);
+          border-color: var(--ft-success);
+        }
+
         @media (max-width: 900px) {
           .recipe-grid {
             grid-template-columns: 1fr;
@@ -688,6 +856,17 @@ export default function AnchorPromptsPage() {
           .period-row,
           .habit-item {
             grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .result-summary,
+          .practice-card {
+            grid-template-columns: 1fr;
+          }
+
+          .result-summary {
+            display: grid;
           }
         }
       `}</style>
