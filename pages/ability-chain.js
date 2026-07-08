@@ -6,6 +6,7 @@ import SiteNav from '../components/SiteNav';
 const ABILITY_STORAGE_KEY = 'fogg-tools-ability-chain-state-v1';
 const GOLDEN_STORAGE_KEY = 'fogg-tools-golden-behavior-state-v1';
 const GOLDEN_TRANSFER_KEY = 'fogg-tools-transfer-golden-behaviors-v1';
+const ANCHOR_PROMPTS_STORAGE_KEY = 'fogg-tools-anchor-prompts-state-v1';
 
 const CHAIN_LINKS = [
   { id: 'time', icon: '⏰', label: '时间', desc: '需要太多时间' },
@@ -123,8 +124,43 @@ function getGoldenBehaviorsFromSnapshot(snapshot) {
   });
 }
 
+function getAnchorPromptSnapshot() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(ANCHOR_PROMPTS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildAnchorPromptReportSection(anchorData) {
+  if (!anchorData) {
+    return '<span class="muted">本次报告未发现锚点提示设计结果。</span>';
+  }
+  const microRecipes = Array.isArray(anchorData.microRecipes) ? anchorData.microRecipes : [];
+  const pearlRecipe = anchorData.pearlRecipe ? [anchorData.pearlRecipe] : [];
+  const recipes = [...microRecipes, ...pearlRecipe];
+  if (!recipes.length) {
+    return '<span class="muted">锚点提示设计器已有进度，但还没有生成配方。</span>';
+  }
+  return `
+    <div class="list">
+      ${recipes.map(recipe => `
+        <div class="item">
+          <strong>${escapeHtml(recipe.type === 'pearl' ? '珍珠习惯' : recipe.periodLabel)}</strong>
+          <p>${escapeHtml(recipe.text)}</p>
+          <p class="muted">状态：${recipe.completed ? '已完成' : '未完成'}</p>
+          ${recipe.note ? `<p class="muted">备注：${escapeHtml(recipe.note)}</p>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
 function buildReportHtml({ goldenSnapshot, habit, weakLinks, ideas, selectedSchemes, schemeAnswers }) {
   const exportedAt = new Date().toLocaleString('zh-CN');
+  const anchorPromptSection = buildAnchorPromptReportSection(getAnchorPromptSnapshot());
   const goldenBehaviors = getGoldenBehaviorsFromSnapshot(goldenSnapshot);
   const allIdeas = weakLinks.flatMap(linkId => (
     (ideas[linkId] || []).map(idea => ({
@@ -230,6 +266,10 @@ function buildReportHtml({ goldenSnapshot, habit, weakLinks, ideas, selectedSche
     ul { margin: 0; padding-left: 18px; }
     li { margin: 8px 0; line-height: 1.65; }
     li strong { color: #5a4b9e; margin-right: 8px; }
+    .list { display: grid; gap: 10px; }
+    .item { border: 1px solid #e8e2f5; border-radius: 8px; padding: 14px; background: #fdfcff; }
+    .item strong, .item p { display: block; }
+    .item p { margin: 6px 0 0; line-height: 1.65; }
     .scheme { border: 1px solid #e8e2f5; border-radius: 8px; padding: 20px; margin-top: 14px; background: #fdfcff; }
     .scheme-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
     .analysis { margin: 0 0 14px; color: #007a5e; background: #f0fff8; border: 1px solid #b2f0d8; border-radius: 8px; padding: 10px 12px; font-weight: 700; }
@@ -282,7 +322,12 @@ function buildReportHtml({ goldenSnapshot, habit, weakLinks, ideas, selectedSche
       ${schemeBlocks}
     </section>
     <section>
-      <h2>五、建议结论</h2>
+      <h2>五、锚点提示设计</h2>
+      <p>这一部分记录用户如何把微行为接到可靠锚点之后，并把配方排回一天的实践时间轴。</p>
+      ${anchorPromptSection}
+    </section>
+    <section>
+      <h2>六、建议结论</h2>
       <p>${readySchemes.length > 0
         ? `建议优先推进：${escapeHtml(readySchemes.map(scheme => scheme.text).join('、'))}。这些方案至少在一个能力角度上找到了可执行突破口。`
         : '当前记录里还没有明确可推进的方案。建议回到候选方案列表，或者重新寻找一个更容易开始的黄金行为。'}</p>

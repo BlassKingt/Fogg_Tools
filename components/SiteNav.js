@@ -5,6 +5,7 @@ const links = [
   { href: '/', label: '工具箱' },
   { href: '/golden-behavior', label: '黄金行为' },
   { href: '/ability-chain', label: '能力链' },
+  { href: '/anchor-prompts', label: '锚点提示' },
 ];
 
 export default function SiteNav() {
@@ -132,11 +133,13 @@ export default function SiteNav() {
 
           .nav-links {
             width: 100%;
+            flex-wrap: wrap;
             justify-content: space-between;
           }
 
           .nav-links :global(a) {
             flex: 1;
+            min-width: calc(50% - 3px);
             text-align: center;
             padding: 9px 8px;
           }

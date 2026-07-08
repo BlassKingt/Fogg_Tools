@@ -18,6 +18,14 @@ const tools = [
     cta: '分析习惯',
     accent: 'gold',
   },
+  {
+    title: '锚点提示设计器',
+    eyebrow: '从日程锚点出发',
+    description: '适合“我已经知道想做什么，但需要一个自然发生的提示”。绘制一天的习惯时间轴，把微习惯钉到可靠锚点之后。',
+    href: '/anchor-prompts',
+    cta: '设计提示',
+    accent: 'purple',
+  },
 ];
 
 const flowSteps = [
@@ -37,6 +45,10 @@ const flowSteps = [
     title: '突破设计',
     description: '继续降低执行难度，让它真的做得起来。',
   },
+  {
+    title: '提示配方',
+    description: '把微行为接到可靠锚点之后，知道何时开始。',
+  },
 ];
 
 export default function ToolboxHome() {
@@ -49,7 +61,7 @@ export default function ToolboxHome() {
             <p className="step-label">推荐路径</p>
             <h1>从一个愿望，走到一个更容易开始的行动。</h1>
             <p>
-              先用黄金行为探索器找到“高影响 + 容易做”的行为，再把选中的行为带入能力链设计器，继续降低执行难度。
+              先用黄金行为探索器找到“高影响 + 容易做”的行为，再用能力链设计器降低执行难度，最后用锚点提示设计器把它接到一天里的可靠提示之后。
             </p>
           </div>
           <ol className="flow" aria-label="推荐连续流程">
@@ -188,7 +200,7 @@ export default function ToolboxHome() {
 
           .tools {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 18px;
           }
 
@@ -271,6 +283,12 @@ export default function ToolboxHome() {
 
           .note strong {
             color: #3e3854;
+          }
+
+          @media (max-width: 900px) {
+            .tools {
+              grid-template-columns: 1fr;
+            }
           }
 
           @media (max-width: 760px) {
