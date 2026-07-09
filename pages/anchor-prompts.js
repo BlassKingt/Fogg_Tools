@@ -117,10 +117,26 @@ export default function AnchorPromptsPage() {
     });
   };
 
-  const moveHabit = (periodId, habitId, direction) => {
-    const habits = state.habits[periodId] || [];
-    const index = habits.findIndex(habit => habit.id === habitId);
-    reorderHabit(periodId, index, index + direction);
+  const startHabitDrag = (event, periodId, index) => {
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setDraggingHabit({ periodId, index });
+  };
+
+  const updateHabitDrag = event => {
+    if (!draggingHabit || typeof document === 'undefined') return;
+    event.preventDefault();
+    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-habit-item="true"]');
+    if (!target) return;
+    const targetPeriodId = target.getAttribute('data-period-id');
+    const targetIndex = Number(target.getAttribute('data-habit-index'));
+    if (targetPeriodId !== draggingHabit.periodId || Number.isNaN(targetIndex) || targetIndex === draggingHabit.index) return;
+    reorderHabit(draggingHabit.periodId, draggingHabit.index, targetIndex);
+    setDraggingHabit({ periodId: draggingHabit.periodId, index: targetIndex });
+  };
+
+  const finishHabitDrag = () => {
+    setDraggingHabit(null);
   };
 
   const updateMicroDraft = patch => {
@@ -208,6 +224,34 @@ export default function AnchorPromptsPage() {
     });
   };
 
+  const removeMicroRecipe = recipeId => {
+    setState(prev => ({
+      ...prev,
+      microRecipes: prev.microRecipes.filter(recipe => recipe.id !== recipeId),
+    }));
+  };
+
+  const resetPearlRecipe = () => {
+    setState(prev => ({
+      ...prev,
+      selectedAnnoyance: '',
+      pearlCandidates: ['', '', '', '', ''],
+      selectedPearlCandidate: '',
+      pearlRecipe: null,
+    }));
+  };
+
+  const clearAllRecipes = () => {
+    setState(prev => ({
+      ...prev,
+      microRecipes: [],
+      selectedAnnoyance: '',
+      pearlCandidates: ['', '', '', '', ''],
+      selectedPearlCandidate: '',
+      pearlRecipe: null,
+    }));
+  };
+
   const toggleRecipeDone = recipeId => {
     setState(prev => ({
       ...prev,
@@ -263,7 +307,10 @@ export default function AnchorPromptsPage() {
                       {(state.habits[period.id] || []).map((habit, index) => (
                         <div
                           key={habit.id}
-                          className={`habit-item ${habit.reliable ? 'reliable' : ''}`}
+                          className={`habit-item ${habit.reliable ? 'reliable' : ''} ${draggingHabit?.periodId === period.id && draggingHabit.index === index ? 'dragging' : ''}`}
+                          data-habit-item="true"
+                          data-period-id={period.id}
+                          data-habit-index={index}
                           onDragOver={event => event.preventDefault()}
                           onDrop={event => {
                             event.preventDefault();
@@ -272,32 +319,31 @@ export default function AnchorPromptsPage() {
                             setDraggingHabit(null);
                           }}
                         >
-                          <span
-                            className="drag-handle"
-                            draggable
-                            title="拖动调整顺序"
-                            onDragStart={() => setDraggingHabit({ periodId: period.id, index })}
-                            onDragEnd={() => setDraggingHabit(null)}
+                          <button
+                            type="button"
+                            className="drag-edge"
+                            aria-label={`拖动调整${habit.text || period.label}的顺序`}
+                            title="按住上下拖动调整顺序"
+                            onPointerDown={event => startHabitDrag(event, period.id, index)}
+                            onPointerMove={updateHabitDrag}
+                            onPointerUp={finishHabitDrag}
+                            onPointerCancel={finishHabitDrag}
                           >
-                            ↕
-                          </span>
+                            <span aria-hidden="true" />
+                          </button>
                           <input
                             value={habit.text}
                             placeholder="例如：刷牙、打开电脑、上床"
                             onChange={event => updateHabitText(period.id, habit.id, event.target.value)}
                           />
-                          <button type="button" className="ghost order-btn" onClick={() => moveHabit(period.id, habit.id, -1)} disabled={index === 0}>
-                            上移
-                          </button>
-                          <button type="button" className="ghost order-btn" onClick={() => moveHabit(period.id, habit.id, 1)} disabled={index === (state.habits[period.id] || []).length - 1}>
-                            下移
-                          </button>
-                          <button type="button" onClick={() => toggleReliable(period.id, habit.id)}>
-                            {habit.reliable ? '可靠锚点' : '标为锚点'}
-                          </button>
-                          <button type="button" className="ghost" onClick={() => removeHabit(period.id, habit.id)}>
-                            删除
-                          </button>
+                          <div className="habit-actions">
+                            <button type="button" className="anchor-toggle" onClick={() => toggleReliable(period.id, habit.id)}>
+                              {habit.reliable ? '可靠锚点' : '标为锚点'}
+                            </button>
+                            <button type="button" className="ghost" onClick={() => removeHabit(period.id, habit.id)}>
+                              删除
+                            </button>
+                          </div>
                         </div>
                       ))}
                       <button type="button" className="add-button" onClick={() => addHabit(period.id)}>
@@ -368,6 +414,9 @@ export default function AnchorPromptsPage() {
                         <span>{recipe.periodLabel}</span>
                         <strong>{recipe.text}</strong>
                         {recipe.note && <p>{recipe.note}</p>}
+                        <button type="button" className="text-button danger" onClick={() => removeMicroRecipe(recipe.id)}>
+                          删除这张配方
+                        </button>
                       </article>
                     ))}
                     <div className="actions">
@@ -386,11 +435,31 @@ export default function AnchorPromptsPage() {
                 <div className="pearl-layout">
                   <aside className={`pearl-stage-card stage-${pearlProgress}`} aria-label="珍珠习惯可视化进度">
                     <div className="clam" aria-hidden="true">
-                      <div className="clam-shell top-shell" />
-                      <div className="clam-mouth">
-                        {pearlProgress > 0 && <span className={`pearl-object stage-${pearlProgress}`} />}
-                      </div>
-                      <div className="clam-shell bottom-shell" />
+                      <svg className="clam-svg" viewBox="0 0 220 170" role="img" aria-hidden="true">
+                        <defs>
+                          <linearGradient id="clamShellGradient" x1="0" x2="1" y1="0" y2="1">
+                            <stop offset="0" stopColor="#7a4f96" />
+                            <stop offset="0.55" stopColor="#51316e" />
+                            <stop offset="1" stopColor="#2f2049" />
+                          </linearGradient>
+                          <linearGradient id="clamInnerGradient" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0" stopColor="#fff5ef" />
+                            <stop offset="0.58" stopColor="#f7bdc9" />
+                            <stop offset="1" stopColor="#df88aa" />
+                          </linearGradient>
+                        </defs>
+                        <path className="clam-top-fill" d="M20 99 C29 44 67 18 109 16 C151 18 191 45 200 99 C153 83 69 83 20 99Z" />
+                        <path className="clam-top-edge" d="M20 99 C29 44 67 18 109 16 C151 18 191 45 200 99" />
+                        <path className="clam-ridge" d="M109 18 C101 45 98 70 101 96" />
+                        <path className="clam-ridge" d="M83 25 C88 50 92 72 95 98" />
+                        <path className="clam-ridge" d="M61 40 C75 58 84 77 90 100" />
+                        <path className="clam-ridge" d="M137 25 C130 50 126 72 123 98" />
+                        <path className="clam-ridge" d="M160 40 C145 58 136 77 130 100" />
+                        <path className="clam-inner" d="M36 103 C58 74 162 74 184 103 C173 138 143 154 110 154 C77 154 47 138 36 103Z" />
+                        <path className="clam-lip" d="M40 103 C67 91 154 91 181 103" />
+                        <path className="clam-bottom" d="M35 105 C52 139 80 156 110 156 C140 156 169 139 185 105 C150 116 72 116 35 105Z" />
+                      </svg>
+                      {pearlProgress > 0 && <span className={`pearl-object stage-${pearlProgress}`} />}
                     </div>
                     <strong>{pearlProgress === 4 ? '珍珠习惯已成形' : '把烦恼慢慢磨成珍珠'}</strong>
                     <p>
@@ -445,6 +514,9 @@ export default function AnchorPromptsPage() {
                         <article className="recipe-card pearl">
                           <span>珍珠习惯</span>
                           <strong>{state.pearlRecipe.text}</strong>
+                          <button type="button" className="text-button danger" onClick={resetPearlRecipe}>
+                            重做珍珠习惯
+                          </button>
                         </article>
                       )}
                       <div className="actions">
@@ -488,12 +560,24 @@ export default function AnchorPromptsPage() {
                           ? (recipe.completed ? '珍珠已擦亮' : '擦亮珍珠')
                           : (recipe.completed ? '已完成' : '完成后打卡')}
                       </button>
+                      <button
+                        type="button"
+                        className="text-button danger"
+                        onClick={() => recipe.type === 'pearl' ? resetPearlRecipe() : removeMicroRecipe(recipe.id)}
+                      >
+                        删除
+                      </button>
                     </article>
                   ))}
                 </div>
 
                 <div className="actions">
                   <button type="button" className="secondary" onClick={() => goToStep('pearl')}>继续调整</button>
+                  {practiceRecipes.length > 0 && (
+                    <button type="button" className="secondary danger-action" onClick={clearAllRecipes}>
+                      清空配方记录
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -659,9 +743,13 @@ export default function AnchorPromptsPage() {
 
         .habit-item {
           display: grid;
-          grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+          grid-template-columns: 42px minmax(0, 1fr) auto;
           gap: 8px;
           align-items: center;
+        }
+
+        .habit-item.dragging {
+          opacity: 0.82;
         }
 
         .habit-item input {
@@ -688,27 +776,37 @@ export default function AnchorPromptsPage() {
           cursor: pointer;
         }
 
-        .drag-handle {
-          display: inline-flex;
-          width: 34px;
-          height: 40px;
-          align-items: center;
-          justify-content: center;
-          color: var(--ft-plum);
+        .drag-edge {
+          width: 42px;
+          min-width: 42px;
+          min-height: 44px;
+          padding: 0;
           background: #f5f0fb;
-          border: 1px solid var(--ft-line);
-          border-radius: 999px;
+          border-color: #ded3ec;
+          border-radius: 8px;
           cursor: grab;
-          font-weight: 900;
+          touch-action: none;
           user-select: none;
         }
 
-        .drag-handle:active {
+        .drag-edge span {
+          display: block;
+          width: 16px;
+          height: 26px;
+          margin: 0 auto;
+          border-left: 2px dotted #7b6596;
+          border-right: 2px dotted #7b6596;
+        }
+
+        .drag-edge:active {
           cursor: grabbing;
         }
 
-        .order-btn {
-          padding-inline: 12px;
+        .habit-actions {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          justify-content: flex-end;
         }
 
         .habit-item.reliable input {
@@ -716,14 +814,14 @@ export default function AnchorPromptsPage() {
           background: #fff8df;
         }
 
-        .habit-item button:first-of-type,
+        .anchor-toggle,
         .primary {
           color: #fff;
           background: var(--ft-plum);
           border-color: var(--ft-plum);
         }
 
-        .habit-item.reliable button:first-of-type {
+        .habit-item.reliable .anchor-toggle {
           color: #4a3500;
           background: #f2c14d;
           border-color: #f2c14d;
@@ -834,6 +932,33 @@ export default function AnchorPromptsPage() {
           line-height: 1.6;
         }
 
+        .text-button {
+          justify-self: start;
+          min-height: 0;
+          color: #6d5b86;
+          background: transparent;
+          border: 0;
+          padding: 3px 0;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        .text-button:hover {
+          color: var(--ft-plum);
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
+        .danger,
+        .danger-action {
+          color: #8b3f4d;
+        }
+
+        .danger-action {
+          background: #fff7f7;
+          border-color: #e8c5c9;
+        }
+
         .recipe-card.pearl {
           border-color: #f2c14d;
           background: #fff8df;
@@ -872,71 +997,77 @@ export default function AnchorPromptsPage() {
 
         .clam {
           position: relative;
-          width: 178px;
-          height: 146px;
+          width: 210px;
+          height: 162px;
           display: grid;
           place-items: center;
         }
 
-        .clam-shell {
-          position: absolute;
-          left: 16px;
-          width: 146px;
-          height: 66px;
-          background:
-            radial-gradient(circle at 28% 28%, rgba(255,255,255,.72), transparent 28%),
-            linear-gradient(145deg, #f7d9df, #e8b5c4 58%, #d796aa);
-          border: 2px solid #c9879b;
-          box-shadow: 0 8px 20px rgba(108, 76, 97, 0.12);
+        .clam-svg {
+          width: 100%;
+          height: 100%;
+          filter: drop-shadow(0 12px 18px rgba(67, 47, 82, 0.16));
         }
 
-        .top-shell {
-          top: 17px;
-          border-radius: 90px 90px 24px 24px;
-          transform: rotate(-7deg);
-          transform-origin: 50% 100%;
+        .clam-top-fill,
+        .clam-bottom {
+          fill: url(#clamShellGradient);
+          stroke: #251a3b;
+          stroke-width: 3;
+          stroke-linejoin: round;
         }
 
-        .bottom-shell {
-          bottom: 16px;
-          border-radius: 24px 24px 90px 90px;
-          transform: rotate(5deg);
-          transform-origin: 50% 0;
+        .clam-top-edge,
+        .clam-ridge,
+        .clam-lip {
+          fill: none;
+          stroke-linecap: round;
         }
 
-        .clam-mouth {
-          position: absolute;
-          z-index: 2;
-          top: 58px;
-          left: 41px;
-          width: 96px;
-          height: 44px;
-          display: grid;
-          place-items: center;
-          background: #fffaf1;
-          border: 1px solid rgba(201, 135, 155, 0.46);
-          border-radius: 999px;
-          box-shadow: inset 0 0 18px rgba(217, 155, 30, 0.16);
+        .clam-top-edge {
+          stroke: rgba(255, 239, 255, 0.32);
+          stroke-width: 3;
+        }
+
+        .clam-ridge {
+          stroke: rgba(223, 196, 239, 0.62);
+          stroke-width: 4;
+        }
+
+        .clam-inner {
+          fill: url(#clamInnerGradient);
+          stroke: #b86d91;
+          stroke-width: 3;
+        }
+
+        .clam-lip {
+          stroke: rgba(255, 255, 255, 0.72);
+          stroke-width: 4;
         }
 
         .pearl-object {
-          display: inline-block;
+          position: absolute;
+          z-index: 2;
+          top: 108px;
+          left: 50%;
+          display: block;
           width: 34px;
           height: 34px;
           background: #817986;
           border: 1px solid rgba(62, 56, 84, 0.28);
+          transform: translate(-50%, -50%);
           transition: border-radius .25s ease, clip-path .25s ease, background .25s ease, box-shadow .25s ease, transform .25s ease;
         }
 
         .pearl-object.stage-1 {
           clip-path: polygon(50% 0, 94% 78%, 8% 70%);
-          transform: rotate(-12deg);
+          transform: translate(-50%, -50%) rotate(-12deg);
         }
 
         .pearl-object.stage-2 {
           clip-path: inset(0 0 0 0 round 5px);
           background: #9a919a;
-          transform: rotate(8deg);
+          transform: translate(-50%, -50%) rotate(8deg);
         }
 
         .pearl-object.stage-3 {
@@ -1013,7 +1144,7 @@ export default function AnchorPromptsPage() {
         .practice-card {
           position: relative;
           display: grid;
-          grid-template-columns: minmax(0, 1fr) auto auto;
+          grid-template-columns: minmax(0, 1fr) auto auto auto;
           gap: 12px;
           align-items: center;
           background: #fffdf9;
@@ -1081,6 +1212,15 @@ export default function AnchorPromptsPage() {
           border-color: var(--ft-success);
         }
 
+        .practice-card .text-button {
+          justify-self: end;
+          min-height: 0;
+          color: #8b3f4d;
+          background: transparent;
+          border: 0;
+          padding: 3px 0;
+        }
+
         .mini-pearl {
           width: 44px;
           height: 44px;
@@ -1132,13 +1272,31 @@ export default function AnchorPromptsPage() {
             padding: 10px;
           }
 
-          .period-row,
-          .habit-item {
+          .period-row {
             grid-template-columns: 1fr;
           }
 
-          .drag-handle {
-            width: 100%;
+          .habit-item {
+            grid-template-columns: 40px minmax(0, 1fr);
+            align-items: stretch;
+          }
+
+          .drag-edge {
+            grid-row: 1 / span 2;
+            width: 40px;
+            min-width: 40px;
+            min-height: 88px;
+            height: 100%;
+          }
+
+          .habit-actions {
+            grid-column: 2;
+            justify-content: flex-start;
+          }
+
+          .habit-actions button {
+            min-height: 38px;
+            padding-inline: 12px;
           }
         }
 
@@ -1150,6 +1308,19 @@ export default function AnchorPromptsPage() {
 
           .result-summary {
             display: grid;
+          }
+
+          .clam {
+            width: 184px;
+            height: 142px;
+          }
+
+          .pearl-object {
+            top: 95px;
+          }
+
+          .practice-card .text-button {
+            justify-self: start;
           }
         }
       `}</style>
