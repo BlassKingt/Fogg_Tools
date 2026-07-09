@@ -84,6 +84,7 @@
 - `npm run build` 已通过上述 bug 修复和体验增强后的版本；本地 `http://localhost:3002/anchor-prompts` 返回 200。当前 Codex in-app browser 自动控制连接不稳定，本轮仅稳定验证了时间轴页面无横向溢出、已无“上移/下移”按钮、拖动边缘存在；珍珠页最终视觉建议人工刷新页面复核。
 - `npm run build` 已通过珍珠悬浮窗和微习惯设计步骤后的版本；本地 `http://localhost:3002/anchor-prompts` 返回 200。Codex in-app browser 本轮自动刷新检查超时，浏览器级视觉验收仍建议人工刷新确认。
 - `npm run build` 已通过珍珠蚌开合逻辑修正后的版本；代码级检查确认已新增 `is-open` / `is-closed` 阶段类和 `stone-drop` / `shell-close` 动画。本地 dev server 曾在热更新瞬间返回 500，随后同一路由恢复 200；Codex in-app browser 仍在自动刷新时超时，最终观感需人工刷新确认。
+- 珍珠蚌开口幅度已进一步加大，避免只打开一半时把内侧区域显得像置顶图层；第一步 hover/按下闭合时会取消 `stone-drop` 动画并隐藏三角石头，避免石头露在闭合蚌壳外。
 
 ## 开放问题
 

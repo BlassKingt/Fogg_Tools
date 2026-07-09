@@ -1149,7 +1149,7 @@ export default function AnchorPromptsPage() {
         .pearl-companion.is-closed:hover .companion-top-shell,
         .pearl-companion.is-closed .pearl-companion-button:focus-visible .companion-top-shell,
         .pearl-companion.is-closed .pearl-companion-button:active .companion-top-shell {
-          transform: translateY(-18px) rotate(-9deg);
+          transform: translateY(-46px) rotate(-17deg);
         }
 
         .pearl-companion.is-open:hover .companion-top-shell,
@@ -1272,6 +1272,13 @@ export default function AnchorPromptsPage() {
 
         .pearl-companion.stage-1.is-open .pearl-object {
           animation: stone-drop 0.85s ease-out both;
+        }
+
+        .pearl-companion.stage-1.is-open:hover .pearl-object,
+        .pearl-companion.stage-1.is-open .pearl-companion-button:focus-visible .pearl-object,
+        .pearl-companion.stage-1.is-open .pearl-companion-button:active .pearl-object {
+          animation: none;
+          opacity: 0;
         }
 
         .pearl-companion.stage-5.is-closed .companion-top-shell {
@@ -1472,10 +1479,10 @@ export default function AnchorPromptsPage() {
 
         @keyframes shell-close {
           0% {
-            transform: translateY(-18px) rotate(-9deg);
+            transform: translateY(-46px) rotate(-17deg);
           }
           48% {
-            transform: translateY(-18px) rotate(-9deg);
+            transform: translateY(-46px) rotate(-17deg);
           }
           100% {
             transform: none;
