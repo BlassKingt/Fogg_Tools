@@ -66,6 +66,7 @@ export default function AnchorPromptsPage() {
     '珍珠习惯已成形。',
     '珍珠已被擦亮。',
   ][pearlStage];
+  const pearlCompanionMode = pearlStage === 0 || pearlStage === 5 ? 'is-closed' : 'is-open';
 
   const goToStep = step => setState(prev => ({ ...prev, step }));
 
@@ -617,7 +618,7 @@ export default function AnchorPromptsPage() {
       {(state.step === 'pearl' || state.step === 'result') && (
         <aside
           key={`pearl-companion-${state.pearlPolishPulse || 0}-${pearlStage}`}
-          className={`pearl-companion stage-${pearlStage} ${state.pearlRecipe?.completed ? 'polished' : ''}`}
+          className={`pearl-companion stage-${pearlStage} ${pearlCompanionMode} ${state.pearlRecipe?.completed ? 'polished' : ''}`}
           aria-label="珍珠习惯进度"
         >
           <button type="button" className="pearl-companion-button" aria-label="查看珍珠习惯进度">
@@ -1141,13 +1142,20 @@ export default function AnchorPromptsPage() {
 
         .companion-top-shell {
           transform-origin: 50% 64%;
-          transition: transform 0.28s ease;
+          transition: transform 0.36s ease;
         }
 
-        .pearl-companion:hover .companion-top-shell,
-        .pearl-companion-button:focus-visible .companion-top-shell,
-        .pearl-companion-button:active .companion-top-shell {
-          transform: translateY(-12px) rotate(-7deg);
+        .pearl-companion.is-open .companion-top-shell,
+        .pearl-companion.is-closed:hover .companion-top-shell,
+        .pearl-companion.is-closed .pearl-companion-button:focus-visible .companion-top-shell,
+        .pearl-companion.is-closed .pearl-companion-button:active .companion-top-shell {
+          transform: translateY(-18px) rotate(-9deg);
+        }
+
+        .pearl-companion.is-open:hover .companion-top-shell,
+        .pearl-companion.is-open .pearl-companion-button:focus-visible .companion-top-shell,
+        .pearl-companion.is-open .pearl-companion-button:active .companion-top-shell {
+          transform: none;
         }
 
         .companion-shell-ridge,
@@ -1174,6 +1182,32 @@ export default function AnchorPromptsPage() {
           stroke-width: 3;
         }
 
+        .companion-inner,
+        .companion-lip {
+          opacity: 0;
+          transition: opacity 0.24s ease;
+        }
+
+        .pearl-companion.is-open .companion-inner,
+        .pearl-companion.is-open .companion-lip,
+        .pearl-companion.is-closed:hover .companion-inner,
+        .pearl-companion.is-closed:hover .companion-lip,
+        .pearl-companion.is-closed .pearl-companion-button:focus-visible .companion-inner,
+        .pearl-companion.is-closed .pearl-companion-button:focus-visible .companion-lip,
+        .pearl-companion.is-closed .pearl-companion-button:active .companion-inner,
+        .pearl-companion.is-closed .pearl-companion-button:active .companion-lip {
+          opacity: 1;
+        }
+
+        .pearl-companion.is-open:hover .companion-inner,
+        .pearl-companion.is-open:hover .companion-lip,
+        .pearl-companion.is-open .pearl-companion-button:focus-visible .companion-inner,
+        .pearl-companion.is-open .pearl-companion-button:focus-visible .companion-lip,
+        .pearl-companion.is-open .pearl-companion-button:active .companion-inner,
+        .pearl-companion.is-open .pearl-companion-button:active .companion-lip {
+          opacity: 0;
+        }
+
         .pearl-object {
           position: absolute;
           z-index: 2;
@@ -1184,8 +1218,22 @@ export default function AnchorPromptsPage() {
           height: 32px;
           background: #817986;
           border: 1px solid rgba(62, 56, 84, 0.28);
+          opacity: 0;
           transform: translate(-50%, -50%);
-          transition: border-radius .25s ease, clip-path .25s ease, background .25s ease, box-shadow .25s ease, transform .25s ease, top .25s ease;
+          transition: border-radius .25s ease, clip-path .25s ease, background .25s ease, box-shadow .25s ease, transform .25s ease, top .25s ease, opacity .24s ease;
+        }
+
+        .pearl-companion.is-open .pearl-object,
+        .pearl-companion.is-closed:hover .pearl-object,
+        .pearl-companion.is-closed .pearl-companion-button:focus-visible .pearl-object,
+        .pearl-companion.is-closed .pearl-companion-button:active .pearl-object {
+          opacity: 1;
+        }
+
+        .pearl-companion.is-open:hover .pearl-object,
+        .pearl-companion.is-open .pearl-companion-button:focus-visible .pearl-object,
+        .pearl-companion.is-open .pearl-companion-button:active .pearl-object {
+          opacity: 0;
         }
 
         .pearl-object.stage-1 {
@@ -1220,6 +1268,35 @@ export default function AnchorPromptsPage() {
             radial-gradient(circle at 65% 70%, rgba(242, 193, 77, .45), transparent 35%),
             linear-gradient(145deg, #fffdf6, #f4d6ec 48%, #d9c4ff);
           box-shadow: 0 0 18px rgba(242, 193, 77, 0.75), 0 6px 20px rgba(98, 73, 127, 0.16);
+        }
+
+        .pearl-companion.stage-1.is-open .pearl-object {
+          animation: stone-drop 0.85s ease-out both;
+        }
+
+        .pearl-companion.stage-5.is-closed .companion-top-shell {
+          animation: shell-close 1.15s ease both;
+        }
+
+        .pearl-companion.stage-5.is-closed .companion-inner,
+        .pearl-companion.stage-5.is-closed .companion-lip,
+        .pearl-companion.stage-5.is-closed .pearl-object {
+          animation: inside-hide-after-close 1.15s ease both;
+        }
+
+        .pearl-companion.stage-5.is-closed:hover .companion-top-shell,
+        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .companion-top-shell,
+        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .companion-top-shell,
+        .pearl-companion.stage-5.is-closed:hover .companion-inner,
+        .pearl-companion.stage-5.is-closed:hover .companion-lip,
+        .pearl-companion.stage-5.is-closed:hover .pearl-object,
+        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .companion-inner,
+        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .companion-lip,
+        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .pearl-object,
+        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .companion-inner,
+        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .companion-lip,
+        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .pearl-object {
+          animation: none;
         }
 
         .pearl-companion.polished .pearl-object {
@@ -1373,6 +1450,48 @@ export default function AnchorPromptsPage() {
           background: transparent;
           border: 0;
           padding: 3px 0;
+        }
+
+        @keyframes stone-drop {
+          0% {
+            top: 48px;
+            opacity: 0;
+            transform: translate(-50%, -80%) rotate(-28deg) scale(0.72);
+          }
+          62% {
+            top: 104px;
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(10deg) scale(1.06);
+          }
+          100% {
+            top: 101px;
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(-12deg) scale(1);
+          }
+        }
+
+        @keyframes shell-close {
+          0% {
+            transform: translateY(-18px) rotate(-9deg);
+          }
+          48% {
+            transform: translateY(-18px) rotate(-9deg);
+          }
+          100% {
+            transform: none;
+          }
+        }
+
+        @keyframes inside-hide-after-close {
+          0% {
+            opacity: 1;
+          }
+          62% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
         }
 
         @keyframes pearl-rise {
