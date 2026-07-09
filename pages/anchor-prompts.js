@@ -180,7 +180,7 @@ export default function AnchorPromptsPage() {
     setState(prev => {
       const pearlCandidates = [...prev.pearlCandidates];
       pearlCandidates[index] = value;
-      const selectedPearlCandidate = prev.selectedPearlCandidate === prev.pearlCandidates[index]
+      const selectedPearlCandidate = prev.selectedPearlCandidate && prev.selectedPearlCandidate === prev.pearlCandidates[index]
         ? value.trim()
         : prev.selectedPearlCandidate;
       return { ...prev, pearlCandidates, selectedPearlCandidate };
