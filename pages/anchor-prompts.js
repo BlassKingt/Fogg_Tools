@@ -17,6 +17,7 @@ import {
 export default function AnchorPromptsPage() {
   const [state, setState] = useState(createInitialAnchorState);
   const [loaded, setLoaded] = useState(false);
+  const [draggingHabit, setDraggingHabit] = useState(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -41,6 +42,13 @@ export default function AnchorPromptsPage() {
   );
   const reliableAnchors = useMemo(() => getReliableAnchors(state.habits), [state.habits]);
   const practiceRecipes = useMemo(() => getPracticeRecipes(state), [state]);
+  const pearlProgress = useMemo(() => {
+    if (state.pearlRecipe) return 4;
+    if ((state.selectedPearlCandidate || '').trim()) return 3;
+    if (state.pearlCandidates.some(candidate => candidate.trim())) return 2;
+    if (state.selectedAnnoyance.trim()) return 1;
+    return 0;
+  }, [state.pearlCandidates, state.pearlRecipe, state.selectedAnnoyance, state.selectedPearlCandidate]);
 
   const goToStep = step => setState(prev => ({ ...prev, step }));
 
@@ -92,6 +100,29 @@ export default function AnchorPromptsPage() {
     }));
   };
 
+  const reorderHabit = (periodId, fromIndex, toIndex) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+    setState(prev => {
+      const habits = [...(prev.habits[periodId] || [])];
+      if (!habits[fromIndex] || !habits[toIndex]) return prev;
+      const [moved] = habits.splice(fromIndex, 1);
+      habits.splice(toIndex, 0, moved);
+      return {
+        ...prev,
+        habits: {
+          ...prev.habits,
+          [periodId]: habits,
+        },
+      };
+    });
+  };
+
+  const moveHabit = (periodId, habitId, direction) => {
+    const habits = state.habits[periodId] || [];
+    const index = habits.findIndex(habit => habit.id === habitId);
+    reorderHabit(periodId, index, index + direction);
+  };
+
   const updateMicroDraft = patch => {
     setState(prev => ({
       ...prev,
@@ -126,7 +157,7 @@ export default function AnchorPromptsPage() {
       };
       return {
         ...prev,
-        microRecipes: [...prev.microRecipes, recipe].slice(0, 3),
+        microRecipes: [...prev.microRecipes, recipe],
         microDraft: {
           anchorId: '',
           candidates: ['', '', ''],
@@ -149,14 +180,17 @@ export default function AnchorPromptsPage() {
     setState(prev => {
       const pearlCandidates = [...prev.pearlCandidates];
       pearlCandidates[index] = value;
-      return { ...prev, pearlCandidates };
+      const selectedPearlCandidate = prev.selectedPearlCandidate === prev.pearlCandidates[index]
+        ? value.trim()
+        : prev.selectedPearlCandidate;
+      return { ...prev, pearlCandidates, selectedPearlCandidate };
     });
   };
 
   const savePearlRecipe = () => {
     setState(prev => {
-      if (!canCreatePearlRecipe(prev.selectedAnnoyance, prev.pearlCandidates)) return prev;
-      const action = prev.pearlCandidates.find(item => item.trim()).trim();
+      if (!canCreatePearlRecipe(prev.selectedAnnoyance, prev.selectedPearlCandidate)) return prev;
+      const action = prev.selectedPearlCandidate.trim();
       return {
         ...prev,
         pearlRecipe: {
@@ -222,17 +256,42 @@ export default function AnchorPromptsPage() {
                 {ANCHOR_PERIODS.map(period => (
                   <section key={period.id} className="period-row">
                     <div className="period-meta">
-                      <h3>{period.label}</h3>
+                      <h3><span className="period-icon" aria-hidden="true">{period.icon}</span>{period.label}</h3>
                       <p>{period.hint}</p>
                     </div>
                     <div className="habit-list">
-                      {(state.habits[period.id] || []).map(habit => (
-                        <div key={habit.id} className={`habit-item ${habit.reliable ? 'reliable' : ''}`}>
+                      {(state.habits[period.id] || []).map((habit, index) => (
+                        <div
+                          key={habit.id}
+                          className={`habit-item ${habit.reliable ? 'reliable' : ''}`}
+                          onDragOver={event => event.preventDefault()}
+                          onDrop={event => {
+                            event.preventDefault();
+                            if (!draggingHabit || draggingHabit.periodId !== period.id) return;
+                            reorderHabit(period.id, draggingHabit.index, index);
+                            setDraggingHabit(null);
+                          }}
+                        >
+                          <span
+                            className="drag-handle"
+                            draggable
+                            title="拖动调整顺序"
+                            onDragStart={() => setDraggingHabit({ periodId: period.id, index })}
+                            onDragEnd={() => setDraggingHabit(null)}
+                          >
+                            ↕
+                          </span>
                           <input
                             value={habit.text}
                             placeholder="例如：刷牙、打开电脑、上床"
                             onChange={event => updateHabitText(period.id, habit.id, event.target.value)}
                           />
+                          <button type="button" className="ghost order-btn" onClick={() => moveHabit(period.id, habit.id, -1)} disabled={index === 0}>
+                            上移
+                          </button>
+                          <button type="button" className="ghost order-btn" onClick={() => moveHabit(period.id, habit.id, 1)} disabled={index === (state.habits[period.id] || []).length - 1}>
+                            下移
+                          </button>
                           <button type="button" onClick={() => toggleReliable(period.id, habit.id)}>
                             {habit.reliable ? '可靠锚点' : '标为锚点'}
                           </button>
@@ -324,49 +383,78 @@ export default function AnchorPromptsPage() {
             {state.step === 'pearl' && (
               <div className="recipe-editor">
                 <p className="section-copy">把无法快速消除的烦恼当成提示。先列出经常困扰你的事，再选一个最频繁、最烦人的事项。</p>
-                <div className="recipe-grid">
-                  <section className="input-card">
-                    <h3>烦恼清单</h3>
-                    {state.annoyances.map((annoyance, index) => (
-                      <label key={index} className="stack-field">
-                        <span>烦恼 {index + 1}</span>
-                        <input value={annoyance} placeholder="例如：排长队、噪音、等人迟到" onChange={event => updateAnnoyance(index, event.target.value)} />
-                      </label>
-                    ))}
-
-                    <h3>选择一个烦恼</h3>
-                    <select value={state.selectedAnnoyance} onChange={event => setState(prev => ({ ...prev, selectedAnnoyance: event.target.value }))}>
-                      <option value="">选择最频繁、最烦人的一个</option>
-                      {state.annoyances.filter(item => item.trim()).map(item => (
-                        <option key={item} value={item.trim()}>{item.trim()}</option>
-                      ))}
-                    </select>
-                  </section>
-
-                  <section className="input-card">
-                    <h3>有益替代动作</h3>
-                    {state.pearlCandidates.map((candidate, index) => (
-                      <label key={index} className="stack-field">
-                        <span>选项 {index + 1}</span>
-                        <input value={candidate} placeholder="例如：放松肩颈、单腿站立 10 秒" onChange={event => updatePearlCandidate(index, event.target.value)} />
-                      </label>
-                    ))}
-                    <button type="button" className="primary" onClick={savePearlRecipe} disabled={!canCreatePearlRecipe(state.selectedAnnoyance, state.pearlCandidates)}>
-                      保存珍珠习惯
-                    </button>
-                    {state.pearlRecipe && (
-                      <article className="recipe-card pearl">
-                        <span>珍珠习惯</span>
-                        <strong>{state.pearlRecipe.text}</strong>
-                      </article>
-                    )}
-                    <div className="actions">
-                      <button type="button" className="secondary" onClick={() => goToStep('micro')}>返回微习惯配方</button>
-                      <button type="button" className="primary" onClick={() => goToStep('result')} disabled={!state.pearlRecipe}>
-                        查看今日实践时间轴
-                      </button>
+                <div className="pearl-layout">
+                  <aside className={`pearl-stage-card stage-${pearlProgress}`} aria-label="珍珠习惯可视化进度">
+                    <div className="clam" aria-hidden="true">
+                      <div className="clam-shell top-shell" />
+                      <div className="clam-mouth">
+                        {pearlProgress > 0 && <span className={`pearl-object stage-${pearlProgress}`} />}
+                      </div>
+                      <div className="clam-shell bottom-shell" />
                     </div>
-                  </section>
+                    <strong>{pearlProgress === 4 ? '珍珠习惯已成形' : '把烦恼慢慢磨成珍珠'}</strong>
+                    <p>
+                      {pearlProgress === 0 && '先选择一个最常困扰你的烦恼。'}
+                      {pearlProgress === 1 && '烦恼像一颗有棱角的小石子，已经进入蚌里。'}
+                      {pearlProgress === 2 && '开始探索新的、有益的习惯，石子正在变圆润。'}
+                      {pearlProgress === 3 && '你已经挑出最佳选项，珍珠快要成形了。'}
+                      {pearlProgress === 4 && '已经生成珍珠习惯，可以放到实践时间轴里。'}
+                    </p>
+                  </aside>
+
+                  <div className="recipe-grid">
+                    <section className="input-card">
+                      <h3>烦恼清单</h3>
+                      {state.annoyances.map((annoyance, index) => (
+                        <label key={index} className="stack-field">
+                          <span>烦恼 {index + 1}</span>
+                          <input value={annoyance} placeholder="例如：排长队、噪音、等人迟到" onChange={event => updateAnnoyance(index, event.target.value)} />
+                        </label>
+                      ))}
+
+                      <h3>选择一个烦恼</h3>
+                      <select value={state.selectedAnnoyance} onChange={event => setState(prev => ({ ...prev, selectedAnnoyance: event.target.value }))}>
+                        <option value="">选择最频繁、最烦人的一个</option>
+                        {state.annoyances.filter(item => item.trim()).map(item => (
+                          <option key={item} value={item.trim()}>{item.trim()}</option>
+                        ))}
+                      </select>
+                    </section>
+
+                    <section className="input-card">
+                      <h3>新的、有益的习惯选项</h3>
+                      {state.pearlCandidates.map((candidate, index) => (
+                        <label key={index} className="stack-field">
+                          <span>选项 {index + 1}</span>
+                          <input value={candidate} placeholder="例如：放松肩颈、单腿站立 10 秒" onChange={event => updatePearlCandidate(index, event.target.value)} />
+                        </label>
+                      ))}
+
+                      <h3>挑选最佳选项</h3>
+                      <select value={state.selectedPearlCandidate || ''} onChange={event => setState(prev => ({ ...prev, selectedPearlCandidate: event.target.value }))}>
+                        <option value="">从上面的有益习惯里选择一个</option>
+                        {state.pearlCandidates.filter(item => item.trim()).map(candidate => (
+                          <option key={candidate} value={candidate.trim()}>{candidate.trim()}</option>
+                        ))}
+                      </select>
+
+                      <button type="button" className="primary" onClick={savePearlRecipe} disabled={!canCreatePearlRecipe(state.selectedAnnoyance, state.selectedPearlCandidate || '')}>
+                        保存珍珠习惯
+                      </button>
+                      {state.pearlRecipe && (
+                        <article className="recipe-card pearl">
+                          <span>珍珠习惯</span>
+                          <strong>{state.pearlRecipe.text}</strong>
+                        </article>
+                      )}
+                      <div className="actions">
+                        <button type="button" className="secondary" onClick={() => goToStep('micro')}>返回微习惯配方</button>
+                        <button type="button" className="primary" onClick={() => goToStep('result')} disabled={!state.pearlRecipe}>
+                          查看今日实践时间轴
+                        </button>
+                      </div>
+                    </section>
+                  </div>
                 </div>
               </div>
             )}
@@ -390,8 +478,15 @@ export default function AnchorPromptsPage() {
                         <strong>{recipe.text}</strong>
                         {recipe.note && <p>{recipe.note}</p>}
                       </div>
+                      {recipe.type === 'pearl' && (
+                        <div className={`mini-pearl ${recipe.completed ? 'polished' : ''}`} aria-hidden="true">
+                          <span />
+                        </div>
+                      )}
                       <button type="button" onClick={() => toggleRecipeDone(recipe.id)}>
-                        {recipe.completed ? '已完成' : '完成后打卡'}
+                        {recipe.type === 'pearl'
+                          ? (recipe.completed ? '珍珠已擦亮' : '擦亮珍珠')
+                          : (recipe.completed ? '已完成' : '完成后打卡')}
                       </button>
                     </article>
                   ))}
@@ -531,7 +626,22 @@ export default function AnchorPromptsPage() {
         }
 
         .period-meta h3 {
+          display: flex;
+          align-items: center;
+          gap: 8px;
           margin: 0 0 6px;
+          font-size: 1rem;
+        }
+
+        .period-icon {
+          display: inline-flex;
+          width: 30px;
+          height: 30px;
+          align-items: center;
+          justify-content: center;
+          background: #f0ecf8;
+          border: 1px solid var(--ft-line);
+          border-radius: 999px;
           font-size: 1rem;
         }
 
@@ -549,8 +659,9 @@ export default function AnchorPromptsPage() {
 
         .habit-item {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) auto auto;
+          grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
           gap: 8px;
+          align-items: center;
         }
 
         .habit-item input {
@@ -575,6 +686,29 @@ export default function AnchorPromptsPage() {
           padding: 8px 14px;
           font-weight: 800;
           cursor: pointer;
+        }
+
+        .drag-handle {
+          display: inline-flex;
+          width: 34px;
+          height: 40px;
+          align-items: center;
+          justify-content: center;
+          color: var(--ft-plum);
+          background: #f5f0fb;
+          border: 1px solid var(--ft-line);
+          border-radius: 999px;
+          cursor: grab;
+          font-weight: 900;
+          user-select: none;
+        }
+
+        .drag-handle:active {
+          cursor: grabbing;
+        }
+
+        .order-btn {
+          padding-inline: 12px;
         }
 
         .habit-item.reliable input {
@@ -705,6 +839,123 @@ export default function AnchorPromptsPage() {
           background: #fff8df;
         }
 
+        .pearl-layout {
+          display: grid;
+          grid-template-columns: 260px minmax(0, 1fr);
+          gap: 16px;
+          align-items: start;
+        }
+
+        .pearl-stage-card {
+          position: sticky;
+          top: 16px;
+          display: grid;
+          gap: 12px;
+          justify-items: center;
+          text-align: center;
+          background: #fffdf9;
+          border: 1px solid #eee4d2;
+          border-radius: 8px;
+          padding: 18px 16px;
+        }
+
+        .pearl-stage-card strong {
+          color: var(--ft-ink);
+        }
+
+        .pearl-stage-card p {
+          margin: 0;
+          color: var(--ft-muted);
+          font-size: 0.86rem;
+          line-height: 1.65;
+        }
+
+        .clam {
+          position: relative;
+          width: 178px;
+          height: 146px;
+          display: grid;
+          place-items: center;
+        }
+
+        .clam-shell {
+          position: absolute;
+          left: 16px;
+          width: 146px;
+          height: 66px;
+          background:
+            radial-gradient(circle at 28% 28%, rgba(255,255,255,.72), transparent 28%),
+            linear-gradient(145deg, #f7d9df, #e8b5c4 58%, #d796aa);
+          border: 2px solid #c9879b;
+          box-shadow: 0 8px 20px rgba(108, 76, 97, 0.12);
+        }
+
+        .top-shell {
+          top: 17px;
+          border-radius: 90px 90px 24px 24px;
+          transform: rotate(-7deg);
+          transform-origin: 50% 100%;
+        }
+
+        .bottom-shell {
+          bottom: 16px;
+          border-radius: 24px 24px 90px 90px;
+          transform: rotate(5deg);
+          transform-origin: 50% 0;
+        }
+
+        .clam-mouth {
+          position: absolute;
+          z-index: 2;
+          top: 58px;
+          left: 41px;
+          width: 96px;
+          height: 44px;
+          display: grid;
+          place-items: center;
+          background: #fffaf1;
+          border: 1px solid rgba(201, 135, 155, 0.46);
+          border-radius: 999px;
+          box-shadow: inset 0 0 18px rgba(217, 155, 30, 0.16);
+        }
+
+        .pearl-object {
+          display: inline-block;
+          width: 34px;
+          height: 34px;
+          background: #817986;
+          border: 1px solid rgba(62, 56, 84, 0.28);
+          transition: border-radius .25s ease, clip-path .25s ease, background .25s ease, box-shadow .25s ease, transform .25s ease;
+        }
+
+        .pearl-object.stage-1 {
+          clip-path: polygon(50% 0, 94% 78%, 8% 70%);
+          transform: rotate(-12deg);
+        }
+
+        .pearl-object.stage-2 {
+          clip-path: inset(0 0 0 0 round 5px);
+          background: #9a919a;
+          transform: rotate(8deg);
+        }
+
+        .pearl-object.stage-3 {
+          clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+          background: #c8b7c4;
+        }
+
+        .pearl-object.stage-4 {
+          width: 38px;
+          height: 38px;
+          clip-path: none;
+          border-radius: 999px;
+          background:
+            radial-gradient(circle at 30% 25%, #fff, rgba(255,255,255,.3) 26%, transparent 27%),
+            radial-gradient(circle at 65% 70%, rgba(242, 193, 77, .45), transparent 35%),
+            linear-gradient(145deg, #fffdf6, #f4d6ec 48%, #d9c4ff);
+          box-shadow: 0 0 18px rgba(242, 193, 77, 0.75), 0 6px 20px rgba(98, 73, 127, 0.16);
+        }
+
         .practice-view {
           display: grid;
           gap: 18px;
@@ -762,7 +1013,7 @@ export default function AnchorPromptsPage() {
         .practice-card {
           position: relative;
           display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
+          grid-template-columns: minmax(0, 1fr) auto auto;
           gap: 12px;
           align-items: center;
           background: #fffdf9;
@@ -830,9 +1081,37 @@ export default function AnchorPromptsPage() {
           border-color: var(--ft-success);
         }
 
+        .mini-pearl {
+          width: 44px;
+          height: 44px;
+          display: grid;
+          place-items: center;
+          background: #fffaf1;
+          border: 1px solid #f2c14d;
+          border-radius: 999px;
+        }
+
+        .mini-pearl span {
+          width: 24px;
+          height: 24px;
+          border-radius: 999px;
+          background: linear-gradient(145deg, #fffdf6, #f4d6ec 48%, #d9c4ff);
+          box-shadow: 0 0 12px rgba(242, 193, 77, 0.45);
+        }
+
+        .mini-pearl.polished span {
+          box-shadow: 0 0 18px rgba(242, 193, 77, 0.95), 0 0 32px rgba(255, 255, 255, 0.9);
+          transform: scale(1.08);
+        }
+
         @media (max-width: 900px) {
+          .pearl-layout,
           .recipe-grid {
             grid-template-columns: 1fr;
+          }
+
+          .pearl-stage-card {
+            position: static;
           }
         }
 
@@ -856,6 +1135,10 @@ export default function AnchorPromptsPage() {
           .period-row,
           .habit-item {
             grid-template-columns: 1fr;
+          }
+
+          .drag-handle {
+            width: 100%;
           }
         }
 
