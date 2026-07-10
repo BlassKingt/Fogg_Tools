@@ -22,7 +22,7 @@
 - `pages/golden-behavior.js` 的移动端使用独立环绕坐标展示候选行为，并通过 touch 坐标和 `touch-action` 支持手机拖拽；待排序区位于焦点图下方，焦点图进入时自动居中。
 - `pages/ability-chain.js` 是 React 版本能力链设计器，已替代原临时承接页，并加入工具导航、localStorage 进度缓存、当前方案移除和 HTML 分析报告导出。
 - `pages/anchor-prompts.js` 是锚点提示设计器，包含 localStorage 缓存、习惯时间轴、微习惯配方、珍珠习惯、实践时间轴和轻量打卡。
-- `pages/anchor-prompts.js` 的珍珠习惯页使用左下角悬浮珍珠蚌作为进度反馈；悬浮窗按阶段切换开合逻辑：未开始和已保存时默认闭合、hover 打开，流程进行中和已擦亮时默认打开、hover 闭合；结果页点击“擦亮珍珠”后，悬浮窗中的珍珠上浮并显示旋转闪光线条。
+- `pages/anchor-prompts.js` 的珍珠习惯页使用左下角悬浮珍珠蚌作为进度反馈；悬浮窗已从正视图改为 45° 斜俯视分层 SVG，包含下壳外层、下壳白色内壳、粉色 mantle、前沿 rim、上壳外层和上壳白色内壳。悬浮窗按阶段切换开合逻辑：未开始和已保存时默认闭合、hover 打开，流程进行中和已擦亮时默认打开、hover 闭合；结果页点击“擦亮珍珠”后，悬浮窗中的珍珠上浮并显示旋转闪光线条。
 - `lib/anchorPrompts.js` 保存锚点提示设计器的时段常量、初始状态、配方文本和排序 helper。
 - 原独立 HTML 能力链工具已迁移进 `/ability-chain`，迁移源目录 `fuge_tools_2/` 和 `Fogg_Tool_2/` 已从仓库移除，避免公开仓库出现重复工具入口。
 - `package.json` 使用 Next.js 13.5.6 和 React 18.2.0。
@@ -85,6 +85,8 @@
 - `npm run build` 已通过珍珠悬浮窗和微习惯设计步骤后的版本；本地 `http://localhost:3002/anchor-prompts` 返回 200。Codex in-app browser 本轮自动刷新检查超时，浏览器级视觉验收仍建议人工刷新确认。
 - `npm run build` 已通过珍珠蚌开合逻辑修正后的版本；代码级检查确认已新增 `is-open` / `is-closed` 阶段类和 `stone-drop` / `shell-close` 动画。本地 dev server 曾在热更新瞬间返回 500，随后同一路由恢复 200；Codex in-app browser 仍在自动刷新时超时，最终观感需人工刷新确认。
 - 珍珠蚌开口幅度已进一步加大，避免只打开一半时把内侧区域显得像置顶图层；第一步 hover/按下闭合时会取消 `stone-drop` 动画并隐藏三角石头，避免石头露在闭合蚌壳外。
+- 珍珠蚌已从旧的正视图上下切开结构，重绘为 45° 斜俯视分层结构：下壳先画外壳和白色内壳，粉色 mantle 收在内壳范围内，前沿 rim 盖住交界；上壳打开时同时露出上半贝壳的白色内壳，避免“舌头”整块覆盖底部图层。
+- `npm run build` 已通过 45° 分层珍珠蚌改写后的版本；`git diff --check` 通过；本地 `http://localhost:3002/anchor-prompts` 在热更新恢复后返回 200。
 
 ## 开放问题
 
