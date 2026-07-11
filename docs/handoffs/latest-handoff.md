@@ -107,6 +107,7 @@
 - 最新验证补充：`npm run build` 通过，`git diff --check` 通过，代码级检查确认 `is-open` / `is-closed` 阶段类和 `stone-drop` / `shell-close` 动画存在。本地 dev server 热更新期间短暂返回 500，随后 `/anchor-prompts` 恢复 200；Codex in-app browser 自动刷新仍超时，需要人工目视确认悬浮窗最终观感。
 - 最新视觉修正：珍珠蚌已重绘为 45° 斜俯视分层结构。下壳包含暗紫外壳、白色内壳、粉色 mantle 和前沿 rim；上壳包含暗紫外壳、白色内壳、纹路和边线。这个结构用于解决旧正视图中“舌头覆盖底层、里外不分”的问题。`npm run build` 和 `git diff --check` 已通过，`/anchor-prompts` 在 dev server 热更新恢复后返回 200。
 - 最新图像重做：45° 分层 SVG 已由用户审定的柔和半立体 sprite sheet 替换。七阶段状态、闭合/打开交互、三角石落入和擦亮珍珠动画均已接入；桌面端和 375px 移动端通过 DOM 尺寸、状态类、动画名及页面横向溢出检查。自动截图接口本轮持续超时，因此最终像素观感仍建议用户在已运行的本地页面人工确认。
+- 最新局部打磨：时间轴拖动柄已变为与输入框贴合的细长竖向抓手，移动端不再跨越输入框和操作按钮两行。微习惯配方页用大号 `3` 强化推荐目标；1–2 张配方时可点“想不出了，先这样吧”提前进入珍珠习惯，3 张时使用原主按钮。设计和验收规则见 `docs/superpowers/plans/2026-07-11-anchor-timeline-and-micro-recipe-polish.md`。
 
 ## 如何继续
 

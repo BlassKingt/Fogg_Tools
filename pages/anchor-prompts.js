@@ -352,23 +352,25 @@ export default function AnchorPromptsPage() {
                             setDraggingHabit(null);
                           }}
                         >
-                          <button
-                            type="button"
-                            className="drag-edge"
-                            aria-label={`拖动调整${habit.text || period.label}的顺序`}
-                            title="按住上下拖动调整顺序"
-                            onPointerDown={event => startHabitDrag(event, period.id, index)}
-                            onPointerMove={updateHabitDrag}
-                            onPointerUp={finishHabitDrag}
-                            onPointerCancel={finishHabitDrag}
-                          >
-                            <span aria-hidden="true" />
-                          </button>
-                          <input
-                            value={habit.text}
-                            placeholder="例如：刷牙、打开电脑、上床"
-                            onChange={event => updateHabitText(period.id, habit.id, event.target.value)}
-                          />
+                          <div className="habit-main">
+                            <button
+                              type="button"
+                              className="drag-edge"
+                              aria-label={`拖动调整${habit.text || period.label}的顺序`}
+                              title="按住上下拖动调整顺序"
+                              onPointerDown={event => startHabitDrag(event, period.id, index)}
+                              onPointerMove={updateHabitDrag}
+                              onPointerUp={finishHabitDrag}
+                              onPointerCancel={finishHabitDrag}
+                            >
+                              <span aria-hidden="true" />
+                            </button>
+                            <input
+                              value={habit.text}
+                              placeholder="例如：刷牙、打开电脑、上床"
+                              onChange={event => updateHabitText(period.id, habit.id, event.target.value)}
+                            />
+                          </div>
                           <div className="habit-actions">
                             <button type="button" className="anchor-toggle" onClick={() => toggleReliable(period.id, habit.id)}>
                               {habit.reliable ? '可靠锚点' : '标为锚点'}
@@ -394,7 +396,14 @@ export default function AnchorPromptsPage() {
             )}
             {state.step === 'micro' && (
               <div className="recipe-editor">
-                <p className="section-copy">选择一个可靠锚点，再写下几个自然跟在它后面的小动作。默认先做 3 张配方卡。</p>
+                <div className="recipe-intro">
+                  <p className="section-copy">选择一个可靠锚点，再写下几个自然跟在它后面的小动作。建议同时实践 3 个微习惯，更容易找到真正适合自己的配方。</p>
+                  <div className="recipe-goal" aria-label={`建议完成 3 张配方，已保存 ${state.microRecipes.length} 张`}>
+                    <strong>3</strong>
+                    <span>张推荐配方</span>
+                    <small>已保存 {state.microRecipes.length} 张</small>
+                  </div>
+                </div>
                 <div className="recipe-grid">
                   <section className="input-card">
                     <h3>选择锚点</h3>
@@ -454,6 +463,11 @@ export default function AnchorPromptsPage() {
                     ))}
                     <div className="actions">
                       <button type="button" className="secondary" onClick={() => goToStep('timeline')}>返回时间轴</button>
+                      {state.microRecipes.length > 0 && state.microRecipes.length < 3 && (
+                        <button type="button" className="secondary" onClick={() => goToStep('pearl')}>
+                          想不出了，先这样吧
+                        </button>
+                      )}
                       <button type="button" className="primary" onClick={() => goToStep('pearl')} disabled={state.microRecipes.length < 3}>
                         下一步：创建珍珠习惯
                       </button>
@@ -788,7 +802,7 @@ export default function AnchorPromptsPage() {
 
         .habit-item {
           display: grid;
-          grid-template-columns: 42px minmax(0, 1fr) auto;
+          grid-template-columns: minmax(0, 1fr) auto;
           gap: 8px;
           align-items: center;
         }
@@ -797,13 +811,20 @@ export default function AnchorPromptsPage() {
           opacity: 0.82;
         }
 
+        .habit-main {
+          display: grid;
+          grid-template-columns: 28px minmax(0, 1fr);
+          align-items: stretch;
+          min-width: 0;
+        }
+
         .habit-item input {
           width: 100%;
           min-height: 40px;
           color: var(--ft-ink);
           background: #fff;
           border: 1px solid var(--ft-line);
-          border-radius: 8px;
+          border-radius: 0 8px 8px 0;
           padding: 9px 11px;
         }
 
@@ -821,14 +842,17 @@ export default function AnchorPromptsPage() {
           cursor: pointer;
         }
 
-        .drag-edge {
-          width: 42px;
-          min-width: 42px;
-          min-height: 44px;
+        .habit-item .drag-edge {
+          box-sizing: border-box;
+          width: 28px;
+          min-width: 28px;
+          min-height: 40px;
+          height: 100%;
           padding: 0;
           background: #f5f0fb;
           border-color: #ded3ec;
-          border-radius: 8px;
+          border-right: 0;
+          border-radius: 8px 0 0 8px;
           cursor: grab;
           touch-action: none;
           user-select: none;
@@ -836,11 +860,25 @@ export default function AnchorPromptsPage() {
 
         .drag-edge span {
           display: block;
-          width: 16px;
-          height: 26px;
+          width: 3px;
+          height: 22px;
           margin: 0 auto;
-          border-left: 2px dotted #7b6596;
-          border-right: 2px dotted #7b6596;
+          background: #8a739f;
+          border-radius: 999px;
+          opacity: 0.86;
+          transition: height 0.16s ease, opacity 0.16s ease;
+        }
+
+        .drag-edge:hover,
+        .drag-edge:focus-visible {
+          background: #eee7f6;
+          border-color: #cfc0df;
+        }
+
+        .drag-edge:hover span,
+        .drag-edge:focus-visible span {
+          height: 26px;
+          opacity: 1;
         }
 
         .drag-edge:active {
@@ -857,6 +895,11 @@ export default function AnchorPromptsPage() {
         .habit-item.reliable input {
           border-color: var(--ft-amber);
           background: #fff8df;
+        }
+
+        .habit-item.reliable .drag-edge {
+          background: #fff3c5;
+          border-color: var(--ft-amber);
         }
 
         .anchor-toggle,
@@ -885,6 +928,46 @@ export default function AnchorPromptsPage() {
           justify-content: flex-end;
           gap: 10px;
           flex-wrap: wrap;
+        }
+
+        .recipe-intro {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+          margin-bottom: 18px;
+        }
+
+        .recipe-intro .section-copy {
+          max-width: 680px;
+          margin: 0;
+        }
+
+        .recipe-goal {
+          display: grid;
+          grid-template-columns: auto auto;
+          align-items: baseline;
+          column-gap: 8px;
+          flex: none;
+          min-width: 150px;
+          padding-left: 18px;
+          border-left: 2px solid var(--ft-amber);
+        }
+
+        .recipe-goal strong {
+          color: var(--ft-plum);
+          font-size: 2.6rem;
+          line-height: 1;
+        }
+
+        .recipe-goal span {
+          font-weight: 800;
+        }
+
+        .recipe-goal small {
+          grid-column: 1 / -1;
+          margin-top: 4px;
+          color: var(--ft-muted);
         }
 
         .recipe-grid {
@@ -1489,20 +1572,21 @@ export default function AnchorPromptsPage() {
           }
 
           .habit-item {
-            grid-template-columns: 40px minmax(0, 1fr);
+            grid-template-columns: 1fr;
             align-items: stretch;
           }
 
-          .drag-edge {
-            grid-row: 1 / span 2;
-            width: 40px;
-            min-width: 40px;
-            min-height: 88px;
-            height: 100%;
+          .habit-main {
+            grid-template-columns: 32px minmax(0, 1fr);
+          }
+
+          .habit-item .drag-edge {
+            width: 32px;
+            min-width: 32px;
           }
 
           .habit-actions {
-            grid-column: 2;
+            grid-column: 1;
             justify-content: flex-start;
           }
 
@@ -1513,6 +1597,18 @@ export default function AnchorPromptsPage() {
 
           .method-toggle {
             grid-template-columns: 1fr;
+          }
+
+          .recipe-intro {
+            display: grid;
+            gap: 12px;
+          }
+
+          .recipe-goal {
+            width: max-content;
+            padding: 10px 0 0;
+            border-top: 2px solid var(--ft-amber);
+            border-left: 0;
           }
         }
 
