@@ -66,7 +66,6 @@ export default function AnchorPromptsPage() {
     '珍珠习惯已成形。',
     '珍珠已被擦亮。',
   ][pearlStage];
-  const pearlCompanionMode = pearlStage === 0 || pearlStage === 5 ? 'is-closed' : 'is-open';
 
   const goToStep = step => setState(prev => ({ ...prev, step }));
 
@@ -618,48 +617,13 @@ export default function AnchorPromptsPage() {
       {(state.step === 'pearl' || state.step === 'result') && (
         <aside
           key={`pearl-companion-${state.pearlPolishPulse || 0}-${pearlStage}`}
-          className={`pearl-companion stage-${pearlStage} ${pearlCompanionMode} ${state.pearlRecipe?.completed ? 'polished' : ''}`}
+          className={`pearl-companion stage-${pearlStage} ${state.pearlRecipe?.completed ? 'polished' : ''}`}
           aria-label="珍珠习惯进度"
         >
           <button type="button" className="pearl-companion-button" aria-label="查看珍珠习惯进度">
-            <svg className="companion-clam" viewBox="0 0 220 178" aria-hidden="true">
-              <defs>
-                <linearGradient id="pearlCompanionShellGradient" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0" stopColor="#2b1746" />
-                  <stop offset="0.55" stopColor="#613b86" />
-                  <stop offset="1" stopColor="#9c6bb2" />
-                </linearGradient>
-                <linearGradient id="pearlCompanionInnerGradient" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0" stopColor="#fff5fa" />
-                  <stop offset="0.6" stopColor="#f3b5d5" />
-                  <stop offset="1" stopColor="#ce78a9" />
-                </linearGradient>
-                <linearGradient id="pearlCompanionNacreGradient" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0" stopColor="#fffdf8" />
-                  <stop offset="0.54" stopColor="#ffe6f1" />
-                  <stop offset="1" stopColor="#d8c6ff" />
-                </linearGradient>
-                <linearGradient id="pearlCompanionMantleGradient" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0" stopColor="#ffd7e6" />
-                  <stop offset="0.62" stopColor="#ef9cc5" />
-                  <stop offset="1" stopColor="#a45c9e" />
-                </linearGradient>
-              </defs>
-              <g className="companion-lower-shell">
-                <path className="companion-lower-outer" d="M31 104c16 46 48 68 84 68 38 0 70-24 83-69-21-16-51-25-84-25-34 0-64 9-83 26Z" />
-                <path className="companion-lower-inner" d="M50 111c17-17 42-26 65-26 25 0 49 9 65 26-13 23-36 34-65 34-28 0-52-11-65-34Z" />
-                <path className="companion-mantle" d="M61 118c15-11 34-17 54-17 21 0 40 6 54 17-12 14-30 22-54 22-23 0-42-8-54-22Z" />
-                <path className="companion-lower-ridge" d="M77 136c12 12 24 19 38 24M153 136c-12 12-24 19-38 24M115 141v22" />
-                <path className="companion-front-rim" d="M48 109c35 13 98 13 134 0" />
-              </g>
-              <g className="companion-top-shell">
-                <path className="companion-top-outer" d="M31 96c16-47 48-70 84-70 38 0 70 24 83 70-21 14-51 22-84 22-34 0-64-8-83-22Z" />
-                <path className="companion-top-inner" d="M44 101c34-13 105-13 140 0-15 11-38 17-70 17-31 0-55-6-70-17Z" />
-                <path className="companion-shell-ridge" d="M62 88c16-29 33-46 53-57M91 101c4-29 11-51 24-70M139 101c-4-29-12-51-24-70M168 88c-16-29-34-46-53-57" />
-                <path className="companion-shell-edge" d="M43 96c36 11 106 11 143 0" />
-              </g>
-            </svg>
-            {pearlStage > 0 && <span className={`pearl-object stage-${pearlStage}`} />}
+            <span className="companion-clam-sprite companion-clam-default" aria-hidden="true" />
+            <span className="companion-clam-sprite companion-clam-interaction" aria-hidden="true" />
+            {(pearlStage === 1 || pearlStage === 6) && <span className={`pearl-object stage-${pearlStage}`} />}
             {state.pearlRecipe?.completed && <span className="shine-ring" />}
           </button>
           <p>{pearlCompanionText}</p>
@@ -1135,122 +1099,78 @@ export default function AnchorPromptsPage() {
           box-shadow: 0 10px 24px rgba(56, 42, 74, 0.12);
         }
 
-        .companion-clam {
+        .pearl-companion.stage-0 {
+          --clam-default-position: 0% 0%;
+          --clam-interaction-position: 33.333% 0%;
+        }
+
+        .pearl-companion.stage-1 {
+          --clam-default-position: 33.333% 0%;
+          --clam-interaction-position: 0% 0%;
+        }
+
+        .pearl-companion.stage-2 {
+          --clam-default-position: 100% 0%;
+          --clam-interaction-position: 0% 0%;
+        }
+
+        .pearl-companion.stage-3 {
+          --clam-default-position: 0% 100%;
+          --clam-interaction-position: 0% 0%;
+        }
+
+        .pearl-companion.stage-4 {
+          --clam-default-position: 33.333% 100%;
+          --clam-interaction-position: 0% 0%;
+        }
+
+        .pearl-companion.stage-5 {
+          --clam-default-position: 0% 0%;
+          --clam-interaction-position: 66.667% 100%;
+        }
+
+        .pearl-companion.stage-6 {
+          --clam-default-position: 33.333% 0%;
+          --clam-interaction-position: 0% 0%;
+        }
+
+        .companion-clam-sprite {
           position: absolute;
-          inset: 10px 8px;
-          width: calc(100% - 16px);
-          height: calc(100% - 20px);
-          overflow: visible;
+          inset: 4px 23px;
+          display: block;
+          width: 152px;
+          height: 152px;
+          background-image: url('/anchor-prompts/pearl-clam/pearl-clam-states.png');
+          background-repeat: no-repeat;
+          background-size: 400% 200%;
           filter: drop-shadow(0 11px 15px rgba(43, 23, 70, 0.2));
+          transition: opacity 0.2s ease, transform 0.2s ease;
+          pointer-events: none;
         }
 
-        .companion-top-outer,
-        .companion-lower-outer {
-          fill: url(#pearlCompanionShellGradient);
-          stroke: #251a3b;
-          stroke-width: 3;
-          stroke-linejoin: round;
-        }
-
-        .companion-top-shell {
-          transform-origin: 50% 70%;
-          transition: transform 0.42s ease;
-        }
-
-        .pearl-companion.is-open .companion-top-shell,
-        .pearl-companion.is-closed:hover .companion-top-shell,
-        .pearl-companion.is-closed .pearl-companion-button:focus-visible .companion-top-shell,
-        .pearl-companion.is-closed .pearl-companion-button:active .companion-top-shell {
-          transform: translateY(-38px) translateX(-3px) rotate(-18deg) scaleY(0.74);
-        }
-
-        .pearl-companion.is-open:hover .companion-top-shell,
-        .pearl-companion.is-open .pearl-companion-button:focus-visible .companion-top-shell,
-        .pearl-companion.is-open .pearl-companion-button:active .companion-top-shell {
-          transform: none;
-        }
-
-        .companion-shell-ridge,
-        .companion-shell-edge,
-        .companion-lower-ridge,
-        .companion-front-rim {
-          fill: none;
-          stroke-linecap: round;
-        }
-
-        .companion-shell-ridge {
-          stroke: rgba(223, 196, 239, 0.66);
-          stroke-width: 4;
-        }
-
-        .companion-shell-edge {
-          stroke: rgba(255, 244, 255, 0.72);
-          stroke-width: 4;
-        }
-
-        .companion-lower-ridge {
-          stroke: rgba(223, 196, 239, 0.48);
-          stroke-width: 3;
-        }
-
-        .companion-lower-inner,
-        .companion-top-inner {
-          fill: url(#pearlCompanionNacreGradient);
-          stroke: rgba(116, 70, 139, 0.52);
-          stroke-width: 3;
-        }
-
-        .companion-mantle {
-          fill: url(#pearlCompanionMantleGradient);
-          stroke: rgba(174, 91, 142, 0.48);
-          stroke-width: 2;
-        }
-
-        .companion-front-rim {
-          stroke: rgba(255, 248, 250, 0.78);
-          stroke-width: 4;
-        }
-
-        .companion-lower-inner,
-        .companion-top-inner,
-        .companion-mantle,
-        .companion-front-rim {
-          opacity: 0;
-          transition: opacity 0.24s ease;
-        }
-
-        .pearl-companion.is-open .companion-lower-inner,
-        .pearl-companion.is-open .companion-top-inner,
-        .pearl-companion.is-open .companion-mantle,
-        .pearl-companion.is-open .companion-front-rim,
-        .pearl-companion.is-closed:hover .companion-lower-inner,
-        .pearl-companion.is-closed:hover .companion-top-inner,
-        .pearl-companion.is-closed:hover .companion-mantle,
-        .pearl-companion.is-closed:hover .companion-front-rim,
-        .pearl-companion.is-closed .pearl-companion-button:focus-visible .companion-lower-inner,
-        .pearl-companion.is-closed .pearl-companion-button:focus-visible .companion-top-inner,
-        .pearl-companion.is-closed .pearl-companion-button:focus-visible .companion-mantle,
-        .pearl-companion.is-closed .pearl-companion-button:focus-visible .companion-front-rim,
-        .pearl-companion.is-closed .pearl-companion-button:active .companion-lower-inner,
-        .pearl-companion.is-closed .pearl-companion-button:active .companion-top-inner,
-        .pearl-companion.is-closed .pearl-companion-button:active .companion-mantle,
-        .pearl-companion.is-closed .pearl-companion-button:active .companion-front-rim {
+        .companion-clam-default {
+          background-position: var(--clam-default-position);
           opacity: 1;
         }
 
-        .pearl-companion.is-open:hover .companion-lower-inner,
-        .pearl-companion.is-open:hover .companion-top-inner,
-        .pearl-companion.is-open:hover .companion-mantle,
-        .pearl-companion.is-open:hover .companion-front-rim,
-        .pearl-companion.is-open .pearl-companion-button:focus-visible .companion-lower-inner,
-        .pearl-companion.is-open .pearl-companion-button:focus-visible .companion-top-inner,
-        .pearl-companion.is-open .pearl-companion-button:focus-visible .companion-mantle,
-        .pearl-companion.is-open .pearl-companion-button:focus-visible .companion-front-rim,
-        .pearl-companion.is-open .pearl-companion-button:active .companion-lower-inner,
-        .pearl-companion.is-open .pearl-companion-button:active .companion-top-inner,
-        .pearl-companion.is-open .pearl-companion-button:active .companion-mantle,
-        .pearl-companion.is-open .pearl-companion-button:active .companion-front-rim {
+        .companion-clam-interaction {
+          background-position: var(--clam-interaction-position);
           opacity: 0;
+          transform: translateY(3px) scale(0.98);
+        }
+
+        .pearl-companion-button:hover .companion-clam-default,
+        .pearl-companion .pearl-companion-button:focus-visible .companion-clam-default,
+        .pearl-companion .pearl-companion-button:active .companion-clam-default {
+          opacity: 0;
+          transform: translateY(-3px) scale(0.98);
+        }
+
+        .pearl-companion-button:hover .companion-clam-interaction,
+        .pearl-companion .pearl-companion-button:focus-visible .companion-clam-interaction,
+        .pearl-companion .pearl-companion-button:active .companion-clam-interaction {
+          opacity: 1;
+          transform: none;
         }
 
         .pearl-object {
@@ -1259,103 +1179,62 @@ export default function AnchorPromptsPage() {
           top: 113px;
           left: 50%;
           display: block;
-          width: 32px;
-          height: 32px;
-          background: #817986;
-          border: 1px solid rgba(62, 56, 84, 0.28);
-          opacity: 0;
-          transform: translate(-50%, -50%);
-          transition: border-radius .25s ease, clip-path .25s ease, background .25s ease, box-shadow .25s ease, transform .25s ease, top .25s ease, opacity .24s ease;
-        }
-
-        .pearl-companion.is-open .pearl-object,
-        .pearl-companion.is-closed:hover .pearl-object,
-        .pearl-companion.is-closed .pearl-companion-button:focus-visible .pearl-object,
-        .pearl-companion.is-closed .pearl-companion-button:active .pearl-object {
           opacity: 1;
+          transform: translate(-50%, -50%);
+          transition: opacity 0.2s ease;
         }
 
-        .pearl-companion.is-open:hover .pearl-object,
-        .pearl-companion.is-open .pearl-companion-button:focus-visible .pearl-object,
-        .pearl-companion.is-open .pearl-companion-button:active .pearl-object {
+        .pearl-companion-button:hover .pearl-object,
+        .pearl-companion .pearl-companion-button:focus-visible .pearl-object,
+        .pearl-companion .pearl-companion-button:active .pearl-object {
           opacity: 0;
         }
 
         .pearl-object.stage-1 {
+          width: 46px;
+          height: 42px;
           clip-path: polygon(50% 0, 94% 78%, 8% 70%);
-          transform: translate(-50%, -50%) rotate(-12deg);
+          background: linear-gradient(145deg, #9b969a 0%, #615d61 52%, #343136 100%);
+          filter: drop-shadow(0 4px 4px rgba(38, 31, 48, 0.28));
+          transform: translate(-50%, -50%) rotate(-9deg);
         }
 
-        .pearl-object.stage-2 {
-          clip-path: inset(0 0 0 0 round 5px);
-          background: #9a919a;
-          transform: translate(-50%, -50%) rotate(8deg);
-        }
-
-        .pearl-object.stage-3 {
-          clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
-          background: #c8b7c4;
-        }
-
-        .pearl-object.stage-4 {
-          clip-path: polygon(50% 0, 80% 12%, 100% 50%, 80% 88%, 50% 100%, 20% 88%, 0 50%, 20% 12%);
-          background: #dcc7d9;
-        }
-
-        .pearl-object.stage-5,
         .pearl-object.stage-6 {
-          width: 38px;
-          height: 38px;
-          clip-path: none;
+          width: 20px;
+          height: 20px;
           border-radius: 999px;
           background:
             radial-gradient(circle at 30% 25%, #fff, rgba(255,255,255,.3) 26%, transparent 27%),
             radial-gradient(circle at 65% 70%, rgba(242, 193, 77, .45), transparent 35%),
             linear-gradient(145deg, #fffdf6, #f4d6ec 48%, #d9c4ff);
-          box-shadow: 0 0 18px rgba(242, 193, 77, 0.75), 0 6px 20px rgba(98, 73, 127, 0.16);
+          box-shadow: 0 0 14px rgba(242, 193, 77, 0.78), 0 4px 14px rgba(98, 73, 127, 0.16);
         }
 
-        .pearl-companion.stage-1.is-open .pearl-object {
+        .pearl-companion.stage-1 .pearl-object {
           animation: stone-drop 0.85s ease-out both;
         }
 
-        .pearl-companion.stage-1.is-open:hover .pearl-object,
-        .pearl-companion.stage-1.is-open .pearl-companion-button:focus-visible .pearl-object,
-        .pearl-companion.stage-1.is-open .pearl-companion-button:active .pearl-object {
+        .pearl-companion.stage-1 .pearl-companion-button:hover .pearl-object,
+        .pearl-companion.stage-1 .pearl-companion-button:focus-visible .pearl-object,
+        .pearl-companion.stage-1 .pearl-companion-button:active .pearl-object {
           animation: none;
           opacity: 0;
         }
 
-        .pearl-companion.stage-5.is-closed .companion-top-shell {
-          animation: shell-close 1.15s ease both;
+        .pearl-companion.stage-5 .companion-clam-default {
+          animation: clam-close-in 1.15s ease both;
         }
 
-        .pearl-companion.stage-5.is-closed .companion-lower-inner,
-        .pearl-companion.stage-5.is-closed .companion-top-inner,
-        .pearl-companion.stage-5.is-closed .companion-mantle,
-        .pearl-companion.stage-5.is-closed .companion-front-rim,
-        .pearl-companion.stage-5.is-closed .pearl-object {
-          animation: inside-hide-after-close 1.15s ease both;
+        .pearl-companion.stage-5 .companion-clam-interaction {
+          animation: clam-close-out 1.15s ease both;
         }
 
-        .pearl-companion.stage-5.is-closed:hover .companion-top-shell,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .companion-top-shell,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .companion-top-shell,
-        .pearl-companion.stage-5.is-closed:hover .companion-lower-inner,
-        .pearl-companion.stage-5.is-closed:hover .companion-top-inner,
-        .pearl-companion.stage-5.is-closed:hover .companion-mantle,
-        .pearl-companion.stage-5.is-closed:hover .companion-front-rim,
-        .pearl-companion.stage-5.is-closed:hover .pearl-object,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .companion-lower-inner,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .companion-top-inner,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .companion-mantle,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .companion-front-rim,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:focus-visible .pearl-object,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .companion-lower-inner,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .companion-top-inner,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .companion-mantle,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .companion-front-rim,
-        .pearl-companion.stage-5.is-closed .pearl-companion-button:active .pearl-object {
+        .pearl-companion.stage-5 .pearl-companion-button:hover .companion-clam-default,
+        .pearl-companion.stage-5 .pearl-companion-button:hover .companion-clam-interaction,
+        .pearl-companion.stage-5 .pearl-companion-button:focus-visible .companion-clam-default,
+        .pearl-companion.stage-5 .pearl-companion-button:focus-visible .companion-clam-interaction,
+        .pearl-companion.stage-5 .pearl-companion-button:active .companion-clam-default,
+        .pearl-companion.stage-5 .pearl-companion-button:active .companion-clam-interaction {
           animation: none;
         }
 
@@ -1530,30 +1409,6 @@ export default function AnchorPromptsPage() {
           }
         }
 
-        @keyframes shell-close {
-          0% {
-            transform: translateY(-38px) translateX(-3px) rotate(-18deg) scaleY(0.74);
-          }
-          48% {
-            transform: translateY(-38px) translateX(-3px) rotate(-18deg) scaleY(0.74);
-          }
-          100% {
-            transform: none;
-          }
-        }
-
-        @keyframes inside-hide-after-close {
-          0% {
-            opacity: 1;
-          }
-          62% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0;
-          }
-        }
-
         @keyframes pearl-rise {
           0% {
             top: 113px;
@@ -1566,6 +1421,28 @@ export default function AnchorPromptsPage() {
           100% {
             top: 72px;
             transform: translate(-50%, -50%) scale(1.04);
+          }
+        }
+
+        @keyframes clam-close-in {
+          0%, 42% {
+            opacity: 0;
+            transform: translateY(-3px) scale(0.98);
+          }
+          100% {
+            opacity: 1;
+            transform: none;
+          }
+        }
+
+        @keyframes clam-close-out {
+          0%, 42% {
+            opacity: 1;
+            transform: none;
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(3px) scale(0.98);
           }
         }
 
@@ -1664,6 +1541,12 @@ export default function AnchorPromptsPage() {
             height: 122px;
           }
 
+          .companion-clam-sprite {
+            inset: 3px 17px;
+            width: 116px;
+            height: 116px;
+          }
+
           .pearl-companion p {
             max-width: 142px;
             font-size: 0.68rem;
@@ -1672,14 +1555,16 @@ export default function AnchorPromptsPage() {
 
           .pearl-object {
             top: 78px;
-            width: 25px;
-            height: 25px;
           }
 
-          .pearl-object.stage-5,
+          .pearl-object.stage-1 {
+            width: 34px;
+            height: 31px;
+          }
+
           .pearl-object.stage-6 {
-            width: 30px;
-            height: 30px;
+            width: 16px;
+            height: 16px;
           }
 
           .shine-ring {

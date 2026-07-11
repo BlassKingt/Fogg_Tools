@@ -48,7 +48,8 @@
 - `pages/_app.js`：全局视觉变量、背景、字体和 focus state。
 - `pages/golden-behavior.js`：当前黄金行为探索器，含工具导航、localStorage 缓存、结果页重新寻找黄金行为入口，以及单个/多个黄金行为进入能力链的入口。移动端不要缩放焦点图坐标系统；候选行为使用独立环绕坐标，焦点图面板内部横向滚动并在进入时自动居中，拖拽统一读取 mouse/touch 坐标。
 - `pages/ability-chain.js`：React 版本能力链设计器，含工具导航、localStorage 缓存、来自黄金行为探索器的方案追加逻辑、当前方案移除、HTML 分析报告导出，以及 all-no 状态下的两个出口 CTA。
-- `pages/anchor-prompts.js`：第三工具页面，包含 localStorage 缓存、时间轴、可靠锚点、3 张微习惯配方、珍珠习惯、实践时间轴和轻量打卡。珍珠习惯页和结果页有左下角悬浮珍珠蚌；当前视觉采用 45° 斜俯视分层 SVG，不再使用旧的正视图上下切开结构。未开始和已保存时默认闭合、hover 打开，流程进行中和已擦亮时默认打开、hover 闭合。结果页“擦亮珍珠”会触发珍珠上浮和旋转闪光。
+- `pages/anchor-prompts.js`：第三工具页面，包含 localStorage 缓存、时间轴、可靠锚点、3 张微习惯配方、珍珠习惯、实践时间轴和轻量打卡。珍珠习惯页和结果页有左下角悬浮珍珠蚌；旧 inline SVG 已替换为图像状态帧。未开始和已保存时默认闭合、hover/focus 打开，流程进行中默认打开、hover/focus 闭合。结果页“擦亮珍珠”继续触发珍珠上浮和旋转闪光。
+- 珍珠蚌生产资产位于 `public/anchor-prompts/pearl-clam/pearl-clam-states.png`，是一张带透明通道的 `4×2` sprite sheet，依次包含闭合、张开空蚌、大三角石、略小正方体、更小不规则凸多面体、更小近圆石和最小珍珠。设计规格见 `docs/superpowers/specs/2026-07-11-pearl-clam-image-assets-redesign.md`，接入记录见 `docs/superpowers/plans/2026-07-11-pearl-clam-image-assets-implementation.md`。
 - `lib/anchorPrompts.js`：第三工具的常量和纯 helper，包括 7 个时段、初始状态、配方文本、可靠锚点读取、珍珠习惯保存校验和实践时间轴排序。
 - `docs/superpowers/specs/2026-07-09-anchor-prompts-design.md`：第三工具设计文档。
 - `docs/superpowers/plans/2026-07-09-anchor-prompts-implementation.md`：第三工具实施计划。
@@ -105,7 +106,8 @@
 - 最新修正：珍珠蚌开合逻辑已按阶段重写。未开始填写烦恼和已保存珍珠习惯时默认闭合，内部和珍珠隐藏，hover/按下后打开；创建流程进行中和擦亮完成后默认打开，hover/按下后闭合。流程开始会触发尖角石头落入动画，保存后会触发慢速合壳动画；擦亮珍珠的上浮发光动画保持不变。
 - 最新验证补充：`npm run build` 通过，`git diff --check` 通过，代码级检查确认 `is-open` / `is-closed` 阶段类和 `stone-drop` / `shell-close` 动画存在。本地 dev server 热更新期间短暂返回 500，随后 `/anchor-prompts` 恢复 200；Codex in-app browser 自动刷新仍超时，需要人工目视确认悬浮窗最终观感。
 - 最新视觉修正：珍珠蚌已重绘为 45° 斜俯视分层结构。下壳包含暗紫外壳、白色内壳、粉色 mantle 和前沿 rim；上壳包含暗紫外壳、白色内壳、纹路和边线。这个结构用于解决旧正视图中“舌头覆盖底层、里外不分”的问题。`npm run build` 和 `git diff --check` 已通过，`/anchor-prompts` 在 dev server 热更新恢复后返回 200。
+- 最新图像重做：45° 分层 SVG 已由用户审定的柔和半立体 sprite sheet 替换。七阶段状态、闭合/打开交互、三角石落入和擦亮珍珠动画均已接入；桌面端和 375px 移动端通过 DOM 尺寸、状态类、动画名及页面横向溢出检查。自动截图接口本轮持续超时，因此最终像素观感仍建议用户在已运行的本地页面人工确认。
 
 ## 如何继续
 
-下一步建议先人工刷新 `/anchor-prompts`，重点确认窄屏时间轴拖动边缘、配方删除/清空、珍珠重做、悬浮珍珠蚌、微习惯设计步骤和“擦亮珍珠”动效；再人工点击一次“生成分析报告”，确认新标签页预览和 HTML 下载体验中包含“锚点提示设计”章节；最后将 `codex/anchor-prompts` 合并回 `main` 并做 Vercel 部署前检查。
+下一步建议先人工刷新 `/anchor-prompts`，重点确认图像珍珠蚌七阶段、hover/focus 开合与“擦亮珍珠”动效的最终观感；再人工点击一次“生成分析报告”，确认新标签页预览和 HTML 下载体验中包含“锚点提示设计”章节；最后将 `codex/anchor-prompts` 合并回 `main` 并做 Vercel 部署前检查。
