@@ -337,4 +337,3 @@ pearlPolishPulse: 0
 - 点击“擦亮珍珠”后，悬浮蚌出现上浮和旋转闪光线条。
 - 375px 移动端无横向溢出。
 - `npm run build` 通过。
-
