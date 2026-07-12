@@ -2,7 +2,7 @@
 
 ## 用途
 
-在 `D:\01work\workspace\01fuge_diag` 打开新的 Codex 窗口时，先读这个文件。
+在项目根目录打开新的 Codex 窗口时，先读这个文件。
 
 ## 建议使用的 skills
 
